@@ -1,0 +1,5 @@
+export const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+
+export const SUPPORTED_CHAINS = ['hardhat']
+
+export const WALLETCONNECT_PROJECT_ID = 'YOUR_PROJECT_ID'
