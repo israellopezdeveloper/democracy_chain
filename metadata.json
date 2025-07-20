@@ -1,0 +1,17 @@
+{
+  "technologies": ["solidity", " web3", " RAG", " nextjs", " reactjs", " vue", " wagmi", " node"],
+  "lang": {
+    "en": {
+      "name": "Democracy Chain",
+      "desc": "A blockchain-based project aimed at making the democratic voting process more transparent and secure."
+    },
+    "es": {
+      "name": "Democracy Chain",
+      "desc": "ChatGPT Plus"
+    },
+    "zh": {
+      "name": "Un proyecto basado en blockchain diseñado para hacer el proceso de votación democrática más transparente y seguro.Democracy Chain",
+      "desc": "一个基于区块链的项目，旨在使民主投票过程更加透明和安全。"
+    }
+  }
+}
