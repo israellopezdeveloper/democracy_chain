@@ -1,0 +1,21 @@
+name: CI Main Branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-images:
+    name: Generate and push images
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: 0
+        recursive: true
+    - name: TBD
+      run: |
+        echo "WIP"
