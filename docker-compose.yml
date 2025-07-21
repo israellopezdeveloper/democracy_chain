@@ -1,0 +1,65 @@
+services:
+  hardhat-node:
+    build:
+      context: .
+      dockerfile: ./hardhat-node/Dockerfile
+    container_name: hardhat-node
+    ports:
+      - "8545:8545"
+    environment:
+      - NODE_ENV=production
+    user: "node"
+    networks:
+      - democracy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  deployer-interactor:
+    build:
+      context: ./dapp
+    container_name: deployer-interactor
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    environment:
+      - NODE_ENV=production
+      - HARDHAT_URL=http://hardhat-node:8545
+    user: "node"
+    depends_on:
+      - hardhat-node
+    networks:
+      - democracy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:5173"
+    environment:
+      - NODE_ENV=production
+      - VITE_HARDHAT_URL=http://hardhat-node:8545
+    user: "node"
+    depends_on:
+      - hardhat-node
+      - deployer-interactor
+    networks:
+      - democracy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  democracy:
+    driver: bridge
+
