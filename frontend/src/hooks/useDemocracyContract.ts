@@ -21,7 +21,7 @@ export function useDemocracyContract() {
       const API_URL =
         import.meta.env.VITE_CONTRACT_API_URL || "http://localhost:3000";
 
-      const [abi, { address }]: [any, ContractInfo] = await Promise.all([
+      const [abi, { address }]: [Abi, ContractInfo] = await Promise.all([
         fetch(`${API_URL}/abi`).then((res) => res.json()),
         fetch(`${API_URL}/address`).then((res) => res.json()),
       ]);
@@ -49,27 +49,48 @@ export function useIsWalletConnected(): boolean {
   return isConnected;
 }
 
+type PersonInput =
+  | { dni: string; name: string; wallet: string }
+  | [string, string, string]
+  | null
+  | undefined;
+
+type CitizenInput =
+  | { person: PersonInput; isRegistered: boolean; voted: boolean }
+  | [PersonInput, boolean, boolean]
+  | null;
+
+type CandidateInput =
+  | { citizen: CitizenInput; voteCount: bigint }
+  | [CitizenInput, bigint]
+  | null;
+
 export class Person {
   dni: string;
   name: string;
   wallet: string;
 
-  constructor(data: any) {
+  constructor(data: PersonInput) {
     if (Array.isArray(data)) {
-      this.dni = data[0];
-      this.name = data[1];
-      this.wallet = data[2];
-      return;
-    }
-    if (typeof data === "object") {
+      const [dni, name, wallet] = data;
+      this.dni = dni;
+      this.name = name;
+      this.wallet = wallet;
+    } else if (
+      data &&
+      typeof data === "object" &&
+      "dni" in data &&
+      "name" in data &&
+      "wallet" in data
+    ) {
       this.dni = data.dni;
       this.name = data.name;
       this.wallet = data.wallet;
-      return;
+    } else {
+      this.dni = "";
+      this.name = "";
+      this.wallet = "0x0000000000000000000000000000000000000000";
     }
-    this.dni = "";
-    this.name = "";
-    this.wallet = "";
   }
 }
 
@@ -78,26 +99,27 @@ export class Citizen {
   isRegistered: boolean;
   voted: boolean;
 
-  constructor(data: any) {
+  constructor(data: CitizenInput) {
     if (Array.isArray(data)) {
-      this.person = new Person(data[0]);
-      this.person.dni = data[0].dni;
-      this.person.name = data[0].name;
-      this.person.wallet = data[0].wallet;
-      this.isRegistered = data[1];
-      this.voted = data[2];
-      return;
-    }
-    if (typeof data === "object") {
+      const [personInput, isRegistered, voted] = data;
+      this.person = new Person(personInput);
+      this.isRegistered = !!isRegistered;
+      this.voted = !!voted;
+    } else if (
+      data &&
+      typeof data === "object" &&
+      "person" in data &&
+      "isRegistered" in data &&
+      "voted" in data
+    ) {
       this.person = new Person(data.person);
-      this.isRegistered = data.isRegistered;
-      this.voted = data.voted;
-      return;
+      this.isRegistered = !!data.isRegistered;
+      this.voted = !!data.voted;
+    } else {
+      this.person = new Person(null);
+      this.isRegistered = false;
+      this.voted = false;
     }
-    console.log("Citizen - NULL");
-    this.person = new Person(null);
-    this.isRegistered = false;
-    this.voted = false;
   }
 }
 
@@ -105,18 +127,22 @@ export class Candidate {
   citizen: Citizen;
   voteCount: bigint;
 
-  constructor(data: any) {
+  constructor(data: CandidateInput) {
     if (Array.isArray(data)) {
-      this.citizen = new Citizen(data[0]);
-      this.voteCount = data[1];
-      return;
-    }
-    if (typeof data === "object") {
+      const [citizenInput, voteCount] = data;
+      this.citizen = new Citizen(citizenInput);
+      this.voteCount = voteCount ?? BigInt(0);
+    } else if (
+      data &&
+      typeof data === "object" &&
+      "citizen" in data &&
+      "voteCount" in data
+    ) {
       this.citizen = new Citizen(data.citizen);
-      this.voteCount = data.voteCount;
-      return;
+      this.voteCount = data.voteCount ?? BigInt(0);
+    } else {
+      this.citizen = new Citizen(null);
+      this.voteCount = BigInt(0);
     }
-    this.citizen = new Citizen(null);
-    this.voteCount = BigInt(0);
   }
 }
