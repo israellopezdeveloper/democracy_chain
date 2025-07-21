@@ -7,39 +7,21 @@ NC='\033[0m'
 
 draw_bottom() {
   local width=$(tput cols)
-  width=$((width - 2))  # Ajustar para bordes y márgenes
-  
-  # Caracteres para las esquinas y bordes
+  width=$((width - 2))
   local bottom_left='╰'
   local bottom_right='╯'
   local horizontal='─'
-  
-  # Crear la línea horizontal
-  local horizontal_line=""
-  for  (( i=0; i < $width; i++ )); do
-    horizontal_line="$horizontal_line$horizontal"
-  done
-  
-  # Imprimir el recuadro
+  local horizontal_line=$(printf "%${width}s" | tr ' ' "$horizontal")
   echo -e "\n${bottom_left}${horizontal_line}${bottom_right}"
 }
 
 draw_top() {
   local width=$(tput cols)
-  width=$((width - 2))  # Ajustar para bordes y márgenes
-  
-  # Caracteres para las esquinas y bordes
+  width=$((width - 2))
   local top_left='╭'
   local top_right='╮'
   local horizontal='─'
-  
-  # Crear la línea horizontal
-  local horizontal_line=""
-  for  (( i=0; i < $width; i++ )); do
-    horizontal_line="$horizontal_line$horizontal"
-  done
-  
-  # Imprimir el recuadro
+  local horizontal_line=$(printf "%${width}s" | tr ' ' "$horizontal")
   echo -e "\n${top_left}${horizontal_line}${top_right}"
 }
 
@@ -48,12 +30,25 @@ echo -e "${GREEN}🚀 Hardhat Ignition Deployment Script${NC}"
 draw_top
 echo -e "${GREEN}🔧 Running preconditions...${NC}"
 ./scripts/preconditions.sh
-# direnv allow
-# eval "$(direnv export bash)"
 draw_bottom
 
-NETWORK=$1
-CONTRACT_NAME=$2
+# Argument parsing
+for arg in "$@"; do
+  case $arg in
+    --network=*)
+      NETWORK="${arg#*=}"
+      shift
+      ;;
+    --contract=*)
+      CONTRACT_NAME="${arg#*=}"
+      shift
+      ;;
+    *)
+      echo -e "${RED}❌ Unknown argument: $arg${NC}"
+      exit 1
+      ;;
+  esac
+done
 
 draw_top
 echo -e "${GREEN}🔧 Running Hardhat compile...${NC}"
@@ -61,6 +56,7 @@ npx hardhat clean
 npx hardhat compile
 draw_bottom
 
+# Selección de red si no se pasó por parámetro
 if [ -z "$NETWORK" ]; then
   NETWORK=$(printf "localhost\nsepolia\nmainnet" | fzf --prompt "Network > ")
 fi
@@ -68,6 +64,7 @@ fi
 draw_top
 echo -e "${GREEN}Selected network: $NETWORK${NC}"
 
+# Selección de contrato si no se pasó por parámetro
 if [ -z "$CONTRACT_NAME" ]; then
   CONTRACTS=$(ls ./contracts/*.sol | xargs -n1 basename | sed 's/\.sol//')
   CONTRACT_NAME=$(printf "$CONTRACTS" | fzf --prompt "Contract > ")
@@ -87,9 +84,9 @@ draw_bottom
 draw_top
 echo -e "${GREEN}Deploying contract...${NC}"
 
-npx hardhat ignition deploy $MODULE_PATH --network $NETWORK --reset --verify | tee deploy.log
+npx hardhat ignition deploy "$MODULE_PATH" --network "$NETWORK" --reset --verify | tee deploy.log
 
-ADDRESS=$(cat deploy.log | grep -Eo '0x[a-fA-F0-9]{40}' | tail -1)
+ADDRESS=$(grep -Eo '0x[a-fA-F0-9]{40}' deploy.log | tail -1)
 rm deploy.log
 
 if [ -z "$ADDRESS" ]; then
@@ -98,19 +95,24 @@ if [ -z "$ADDRESS" ]; then
   exit 1
 fi
 
+# Guardar en archivo JSON
+cat <<EOF > deployed-address.json
+{
+  "address": "$ADDRESS",
+  "network": "$NETWORK"
+}
+EOF
+
 echo -e "\n${GREEN}✅ Contract deployed at: $ADDRESS${NC}"
 draw_bottom
 
-
 draw_top
-
-# Llamar script Node.js usando variables de entorno
 echo -e "${GREEN}Launching Node.js interactive script...${NC}"
 
-NETWORK=$NETWORK \
-CONTRACT_NAME=$CONTRACT_NAME \
-ADDRESS=$ADDRESS \
-npx hardhat run ./scripts/interact.mjs --network $NETWORK
+NETWORK="$NETWORK" \
+CONTRACT_NAME="$CONTRACT_NAME" \
+ADDRESS="$ADDRESS" \
+npx hardhat run ./scripts/interact.mjs --network "$NETWORK"
 
 EXIT_CODE=$?
 
@@ -121,3 +123,4 @@ else
 fi
 
 draw_bottom
+

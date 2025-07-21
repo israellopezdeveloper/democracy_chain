@@ -15,7 +15,7 @@ export default function CandidatesPage() {
     if (!contract) return
 
     try {
-      const count: bigint = await contract.read.getCandidateCount() as bigint
+      const count: bigint = await contract.read.getCandidateCount([]) as bigint
       const list: CandidateItem[] = [];
       for (let i = 0; i < count; i++) {
         const candidate: Candidate = new Candidate(await contract.read.getCandidateByIndex([i]));
@@ -35,7 +35,9 @@ export default function CandidatesPage() {
     if (!contract) return;
 
     try {
-      await contract.write.vote([wallet]);
+      await contract.write.vote({
+        args: [wallet],
+      });
       setTimeout(async () => { await fetchCandidates(); }, 1000000);
     } catch (error) {
       console.error("Error al votar:", error);
@@ -44,7 +46,7 @@ export default function CandidatesPage() {
 
   useEffect(() => {
     fetchCandidates();
-  }, []);
+  }, [contract]);
 
   return (<main>
     <div>
