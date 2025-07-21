@@ -43,7 +43,7 @@ services:
     ports:
       - "80:5173"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development # production
       - VITE_HARDHAT_URL=http://hardhat-node:8545
     user: "node"
     depends_on:

@@ -10,7 +10,7 @@ export default function AboutPage() {
       />
       <div>
         <h1>
-          DemocracyChain
+          Democracy Chain
         </h1>
 
         <h2>
@@ -33,13 +33,13 @@ export default function AboutPage() {
           </p>
 
           <p>
-            Así nació <strong>DemocracyChain</strong>, un proyecto que combina mi pasión por blockchain con mi deseo de contribuir a la sociedad. DemocracyChain no es solo un contrato inteligente: es una propuesta de cómo usar la tecnología para garantizar elecciones justas, transparentes y sin intermediarios que puedan manipular los resultados.
+            Así nació <strong>Democracy Chain</strong>, un proyecto que combina mi pasión por blockchain con mi deseo de contribuir a la sociedad. Democracy Chain no es solo un contrato inteligente: es una propuesta de cómo usar la tecnología para garantizar elecciones justas, transparentes y sin intermediarios que puedan manipular los resultados.
           </p>
 
-          <h2>¿Qué es DemocracyChain? 🛠️</h2>
+          <h2>¿Qué es Democracy Chain? 🛠️</h2>
 
           <p>
-            <strong>DemocracyChain</strong> es un contrato inteligente escrito en Solidity, desplegado en blockchain y conectado a un frontend moderno utilizando tecnologías como React y Wagmi. Su objetivo es ofrecer un sistema de votación digital donde:
+            <strong>Democracy Chain</strong> es un contrato inteligente escrito en Solidity, desplegado en blockchain y conectado a un frontend moderno utilizando tecnologías como React y Wagmi. Su objetivo es ofrecer un sistema de votación digital donde:
           </p>
 
           <ul>
@@ -75,7 +75,7 @@ export default function AboutPage() {
           <h2>Mirando al futuro 🚀</h2>
 
           <p>
-            DemocracyChain es solo el principio. Tengo la intención de seguir desarrollándolo y explorando nuevas funciones, como:
+            Democracy Chain es solo el principio. Tengo la intención de seguir desarrollándolo y explorando nuevas funciones, como:
           </p>
 
           <ul>
@@ -90,7 +90,7 @@ export default function AboutPage() {
           </p>
 
           <p>
-            Si has llegado hasta aquí, ¡muchas gracias por tu interés! 😊 Te invito a seguir explorando <strong>DemocracyChain</strong> y a ponerte en contacto conmigo si quieres saber más, colaborar o compartir tus ideas. ¡Juntos podemos construir herramientas que hagan del mundo un lugar más justo y participativo! 🤝
+            Si has llegado hasta aquí, ¡muchas gracias por tu interés! 😊 Te invito a seguir explorando <strong>Democracy Chain</strong> y a ponerte en contacto conmigo si quieres saber más, colaborar o compartir tus ideas. ¡Juntos podemos construir herramientas que hagan del mundo un lugar más justo y participativo! 🤝
           </p>
         </div>
       </div>

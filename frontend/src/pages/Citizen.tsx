@@ -11,10 +11,21 @@ export default function CitizenPage() {
   const handleAddCitizen = async () => {
     if (!newDni || !newName || !contract) return;
     try {
-      if (newCandidate) {
-        await contract.write.addCitizenCandidate([newDni, newName])
+      // @ts-expect-error
+      const citizen: Citizen = new Citizen(await contract.read.getCitizen())
+      if (citizen.person.wallet === '0x0000000000000000000000000000000000000000') {
+        if (newCandidate) {
+          // @ts-expect-error
+          await contract.write.addCitizenCandidate([newDni, newName])
+        } else {
+          // @ts-expect-error
+          await contract.write.registerCitizen([newDni, newName]);
+        }
       } else {
-        await contract.write.registerCitizen([newDni, newName]);
+        if (newCandidate) {
+          // @ts-expect-error
+          await contract.write.addCandidate([]);
+        }
       }
       setIsDisabled(true)
     } catch (e) {
@@ -25,11 +36,13 @@ export default function CitizenPage() {
     if (!contract) return
 
     try {
+      // @ts-expect-error
       const citizen: Citizen = new Citizen(await contract.read.getCitizen())
       if (citizen.person.wallet !== '0x0000000000000000000000000000000000000000') {
         setNewDni(citizen.person.dni)
         setNewName(citizen.person.name)
         setIsDisabled(true)
+        // @ts-expect-error
         const candidate: Candidate = new Candidate(await contract.read.getCandidate([citizen.person.dni]))
         setNewCandidate(candidate.citizen.person.wallet !== '0x0000000000000000000000000000000000000000')
       }
@@ -40,7 +53,7 @@ export default function CitizenPage() {
 
   useEffect(() => {
     loadCitizen();
-  }, []);
+  }, [contract]);
 
 
   return (<main>
@@ -51,7 +64,7 @@ export default function CitizenPage() {
       />
       <div>
         <h1>
-          DemocracyChain
+          Democracy Chain
         </h1>
 
         <h2>

@@ -1,9 +1,10 @@
-import { usePublicClient, useWalletClient } from "wagmi";
+import { usePublicClient, useWalletClient, useAccount } from "wagmi";
 import { getContract } from "viem";
 import { useEffect, useState } from "react";
+import type { Abi } from "viem";
 
 interface ContractInfo {
-  abi: any;
+  abi: Abi;
   address: `0x${string}`;
   network: string;
 }
@@ -20,11 +21,10 @@ export function useDemocracyContract() {
       const API_URL =
         import.meta.env.VITE_CONTRACT_API_URL || "http://localhost:3000";
 
-      const [abi, { address, network }]: [any, ContractInfo] =
-        await Promise.all([
-          fetch(`${API_URL}/abi`).then((res) => res.json()),
-          fetch(`${API_URL}/address`).then((res) => res.json()),
-        ]);
+      const [abi, { address }]: [any, ContractInfo] = await Promise.all([
+        fetch(`${API_URL}/abi`).then((res) => res.json()),
+        fetch(`${API_URL}/address`).then((res) => res.json()),
+      ]);
 
       const client = walletClient ?? publicClient;
       if (!client || !abi || !address) return;
@@ -42,6 +42,11 @@ export function useDemocracyContract() {
   }, [walletClient, publicClient]);
 
   return contract;
+}
+
+export function useIsWalletConnected(): boolean {
+  const { isConnected } = useAccount();
+  return isConnected;
 }
 
 export class Person {
