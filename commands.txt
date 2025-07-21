@@ -1,0 +1,6 @@
+1 - cls; nvim
+2 - cls; cd dapp; loop "🚀 Hardhat node" "npx hardhat node"
+3 - cls; cd dapp; loop "🚢 Deploy & Run" "./scripts/deploy_n_run.sh"
+4 - cls; cd frontend; loop "🌐 Frontend" "npm run dev"
+5 - cls; cd dapp; loop "🧪 Tests" "npx hardhat clean; npx hardhat compile; npx hardhat test"
+6 - cls; set_title " Commands"  

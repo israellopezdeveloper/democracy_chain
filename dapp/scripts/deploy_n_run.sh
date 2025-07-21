@@ -48,8 +48,8 @@ echo -e "${GREEN}🚀 Hardhat Ignition Deployment Script${NC}"
 draw_top
 echo -e "${GREEN}🔧 Running preconditions...${NC}"
 ./scripts/preconditions.sh
-direnv allow
-eval "$(direnv export bash)"
+# direnv allow
+# eval "$(direnv export bash)"
 draw_bottom
 
 NETWORK=$1
