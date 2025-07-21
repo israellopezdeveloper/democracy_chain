@@ -28,7 +28,7 @@ export default function Navbar() {
         <ConnectButton />
 
         <Link to="/">
-          DemocracyChain
+          Democracy Chain
         </Link>
 
         <button

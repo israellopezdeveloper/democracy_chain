@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useDemocracyContract, Candidate } from '../hooks/useDemocracyContract'
+import { useDemocracyContract, Candidate, Citizen } from '../hooks/useDemocracyContract'
+import { Modal } from "../components/Modal";
 
 interface CandidateItem {
   dni: string;
@@ -10,14 +11,17 @@ interface CandidateItem {
 export default function CandidatesPage() {
   const contract = useDemocracyContract()
   const [candidates, setCandidates] = useState<CandidateItem[]>([]);
+  const [showErrorCandidateModal, setShowErrorCandidateModal] = useState(false);
 
   const fetchCandidates = async () => {
     if (!contract) return
 
     try {
-      const count: bigint = await contract.read.getCandidateCount([]) as bigint
+      // @ts-expect-error
+      const count: bigint = await contract.read.getCandidateCount([]) as bigint;
       const list: CandidateItem[] = [];
       for (let i = 0; i < count; i++) {
+        // @ts-expect-error
         const candidate: Candidate = new Candidate(await contract.read.getCandidateByIndex([i]));
         list.push({
           dni: candidate.citizen.person.dni, name: candidate.citizen.person.name, votes: candidate.voteCount
@@ -30,83 +34,95 @@ export default function CandidatesPage() {
   };
 
   const handleVote = async (wallet: string) => {
-    console.log("Votando por candidato con wallet:", wallet);
-
     if (!contract) return;
 
     try {
+      const citizen: Citizen = await contract.read.getCitizen([]);
+      if (citizen.voted) {
+        setShowErrorCandidateModal(true); // ✅ Mostrar modal
+        return;
+      }
+      // @ts-expect-error
       await contract.write.vote({
         args: [wallet],
       });
       setTimeout(async () => { await fetchCandidates(); }, 1000000);
-    } catch (error) {
-      console.error("Error al votar:", error);
+    } catch (e) {
+      console.error("Error al votar:", e);
+      setShowErrorCandidateModal(true); // ✅ Mostrar modal
     }
   };
 
   useEffect(() => {
+    if (!contract) return;
     fetchCandidates();
+    const interval = setInterval(fetchCandidates, 10000); // cada 10s
+    return () => clearInterval(interval);
   }, [contract]);
 
-  return (<main>
-    <div>
-      <img
-        src="/freedom.svg"
-        alt="Freedom"
-      />
-      <div>
-        <h1>
-          DemocracyChain
-        </h1>
 
-        <h2>
-          Candidatos
-        </h2>
+  return (
+    <>
+      <main>
+        <div>
+          <img src="/freedom.svg" alt="Freedom" />
+          <div>
+            <h1>Democracy Chain</h1>
+            <h2>Candidatos</h2>
 
-        <div className="table-container">
-          {candidates.length === 0 ? (
-            <p>No hay candidatos aún.</p>
-          ) : (
-            <div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>DNI</th>
-                    <th>Nombre</th>
-                    <th>Votos</th>
-                    <th>Votar</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {candidates.map((c) => (
-                    <tr key={c.dni} >
-                      <td>{c.dni}</td>
-                      <td>{c.name}</td>
-                      <td>{c.votes.toString()}</td>
-                      <td>
-                        <button
-                          onClick={() => handleVote(c.dni)}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "1.5rem"
-                          }}
-                          title="Votar"
-                        >
-                          🗳️
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="table-container">
+              {candidates.length === 0 ? (
+                <p>No hay candidatos aún.</p>
+              ) : (
+                <div>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Votos</th>
+                        <th>Votar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {candidates.map((c) => (
+                        <tr key={c.dni}>
+                          <td>{c.dni}</td>
+                          <td>{c.name}</td>
+                          <td>{c.votes.toString()}</td>
+                          <td>
+                            <button
+                              onClick={() => handleVote(c.dni)}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "1.5rem",
+                              }}
+                              title="Votar"
+                            >
+                              🗳️
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </div>
-  </main>
+      </main>
+      {showErrorCandidateModal && (
+        <Modal
+          title="🗳️ Ya has votado"
+          message="Solo puedes votar una vez por elección."
+          onClose={() => setShowErrorCandidateModal(false)}
+          autoCloseDelay={4000}
+        />
+      )}
+    </>
   );
 }
 
