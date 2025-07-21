@@ -90,7 +90,7 @@ npx hardhat test
 
 ## 📄 TODO
 
-See `TODO.md` for pending features and ideas like vote auditing, user roles, and backend indexing.
+See [`TODO.md`](TODO.md) for pending features and ideas like vote auditing, user roles, and backend indexing.
 
 ---
 
