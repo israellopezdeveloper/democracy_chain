@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDemocracyContract, Candidate, Citizen } from '../hooks/useDemocracyContract'
 import { Modal } from "../components/Modal";
 
@@ -13,15 +13,15 @@ export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<CandidateItem[]>([]);
   const [showErrorCandidateModal, setShowErrorCandidateModal] = useState(false);
 
-  const fetchCandidates = async () => {
+  const fetchCandidates = useCallback(async () => {
     if (!contract) return
 
     try {
-      // @ts-expect-error
+      // @ts-expect-error "Dynamic ABI import"
       const count: bigint = await contract.read.getCandidateCount([]) as bigint;
       const list: CandidateItem[] = [];
       for (let i = 0; i < count; i++) {
-        // @ts-expect-error
+        // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(await contract.read.getCandidateByIndex([i]));
         list.push({
           dni: candidate.citizen.person.dni, name: candidate.citizen.person.name, votes: candidate.voteCount
@@ -31,18 +31,19 @@ export default function CandidatesPage() {
     } catch (e) {
       console.error("Error loading candidates", e);
     }
-  };
+  }, [contract]);
 
   const handleVote = async (wallet: string) => {
     if (!contract) return;
 
     try {
+      // @ts-expect-error "Dynamic ABI import"
       const citizen: Citizen = await contract.read.getCitizen([]);
       if (citizen.voted) {
         setShowErrorCandidateModal(true); // ✅ Mostrar modal
         return;
       }
-      // @ts-expect-error
+      // @ts-expect-error "Dynamic ABI import"
       await contract.write.vote({
         args: [wallet],
       });
@@ -58,7 +59,7 @@ export default function CandidatesPage() {
     fetchCandidates();
     const interval = setInterval(fetchCandidates, 10000); // cada 10s
     return () => clearInterval(interval);
-  }, [contract]);
+  }, [contract, fetchCandidates]);
 
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDemocracyContract, Citizen, Candidate } from '../hooks/useDemocracyContract'
 
 export default function CitizenPage() {
@@ -11,49 +11,50 @@ export default function CitizenPage() {
   const handleAddCitizen = async () => {
     if (!newDni || !newName || !contract) return;
     try {
-      // @ts-expect-error
+      // @ts-expect-error "Dynamic ABI import"
       const citizen: Citizen = new Citizen(await contract.read.getCitizen())
       if (citizen.person.wallet === '0x0000000000000000000000000000000000000000') {
         if (newCandidate) {
-          // @ts-expect-error
+          // @ts-expect-error "Dynamic ABI import"
           await contract.write.addCitizenCandidate([newDni, newName])
         } else {
-          // @ts-expect-error
+          // @ts-expect-error "Dynamic ABI import"
           await contract.write.registerCitizen([newDni, newName]);
         }
       } else {
         if (newCandidate) {
-          // @ts-expect-error
+          // @ts-expect-error "Dynamic ABI import"
           await contract.write.addCandidate([]);
         }
       }
       setIsDisabled(true)
     } catch (e) {
+      console.log("Error:", e)
     }
   };
 
-  const loadCitizen = async () => {
+  const loadCitizen = useCallback(async () => {
     if (!contract) return
 
     try {
-      // @ts-expect-error
+      // @ts-expect-error "Dynamic ABI import"
       const citizen: Citizen = new Citizen(await contract.read.getCitizen())
       if (citizen.person.wallet !== '0x0000000000000000000000000000000000000000') {
         setNewDni(citizen.person.dni)
         setNewName(citizen.person.name)
         setIsDisabled(true)
-        // @ts-expect-error
+        // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(await contract.read.getCandidate([citizen.person.dni]))
         setNewCandidate(candidate.citizen.person.wallet !== '0x0000000000000000000000000000000000000000')
       }
     } catch (e) {
       console.log("No existe", e)
     }
-  }
+  }, [contract])
 
   useEffect(() => {
     loadCitizen();
-  }, [contract]);
+  }, [contract, loadCitizen]);
 
 
   return (<main>

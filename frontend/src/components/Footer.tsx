@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDemocracyContract } from '../hooks/useDemocracyContract'
 
 export default function Footer() {
@@ -7,24 +7,24 @@ export default function Footer() {
   const [newRegistrationDate, setNewRegistrationDate] = useState("");
   const [newVotingDate, setNewVotingDate] = useState("");
 
-  const loadDates = async () => {
+  const loadDates = useCallback(async () => {
     if (!contract) return
 
     try {
-      // @ts-expect-error
+      // @ts-expect-error "Dynamic ABI import"
       const registration = new Date(Number((await contract.read.REGISTRATION_DEADLINE([])) as bigint))
-      // @ts-expect-error
+      // @ts-expect-error "Dynamic ABI import"
       const voting = new Date(Number(await contract.read.VOTING_DEADLINE([]) as bigint))
       setNewRegistrationDate(registration.toLocaleDateString())
       setNewVotingDate(voting.toLocaleDateString())
     } catch (e) {
       console.log("No existe", e)
     }
-  }
+  }, [contract])
 
   useEffect(() => {
     loadDates();
-  }, [contract]);
+  }, [contract, loadDates]);
 
   return (
     <>

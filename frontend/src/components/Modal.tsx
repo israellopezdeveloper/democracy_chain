@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface ModalProps {
@@ -12,19 +12,19 @@ interface ModalProps {
 export function Modal({ title, message, onClose, autoCloseDelay = 0, redirectTo = "" }: ModalProps) {
   const navigate = useNavigate();
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose();
     if (redirectTo) {
       navigate(redirectTo);
     }
-  };
+  }, [onClose, navigate, redirectTo]);
 
   useEffect(() => {
     if (autoCloseDelay > 0) {
       const timer = setTimeout(handleClose, autoCloseDelay);
       return () => clearTimeout(timer);
     }
-  }, [autoCloseDelay, onClose]);
+  }, [autoCloseDelay, onClose, handleClose]);
 
   return (
     <div className="modalbg">
