@@ -7,6 +7,9 @@ NC='\033[0m'
 
 draw_bottom() {
   local width=$(tput cols)
+  if [[ "$width" -eq 0 ]]; then
+    width=60
+  fi
   width=$((width - 2))
   local bottom_left='╰'
   local bottom_right='╯'
@@ -17,6 +20,9 @@ draw_bottom() {
 
 draw_top() {
   local width=$(tput cols)
+  if [[ "$width" -eq 0 ]]; then
+    width=60
+  fi
   width=$((width - 2))
   local top_left='╭'
   local top_right='╮'

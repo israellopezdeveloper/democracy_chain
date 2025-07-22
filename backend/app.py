@@ -1,39 +1,55 @@
+import asyncio
 import json
 import os
 import shutil
-import time
 import uuid
+from contextlib import asynccontextmanager
 
-import pika
+import aio_pika
+from aio_pika.abc import AbstractChannel, AbstractRobustConnection
 from fastapi import FastAPI, File, Form, UploadFile, status
 from fastapi.responses import PlainTextResponse
-from pika.exceptions import AMQPConnectionError
 
 app = FastAPI()
 QUEUE_NAME = "documents"
-
 UPLOAD_DIR = "/data/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+connection: AbstractRobustConnection | None = None
+channel: AbstractChannel | None = None
 
-def connect_to_rabbitmq(retries=10, delay=3):
+
+async def connect_to_rabbitmq(retries=10, delay=3):
+    global connection, channel
     for attempt in range(retries):
         try:
-            connection = pika.BlockingConnection(
-                pika.ConnectionParameters("rabbitmq"),
+            connection = await aio_pika.connect_robust(
+                "amqp://guest:guest@rabbitmq/",
+                heartbeat=30,
             )
-            channel = connection.channel()
-            channel.queue_declare(queue="files")
+            channel = await connection.channel()
+            await channel.declare_queue(QUEUE_NAME, durable=True)
             print("✅ Conectado a RabbitMQ")
-            return channel
-        except AMQPConnectionError as _:
+            return
+        except aio_pika.exceptions.AMQPConnectionError:
             print(f"❌ RabbitMQ not available ({attempt + 1}/{retries})")
-            time.sleep(delay)
+            await asyncio.sleep(delay)
     raise RuntimeError("❌ Unable to connect to RabbitMQ")
 
 
-channel = connect_to_rabbitmq()
-channel.queue_declare(queue=QUEUE_NAME)
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    global channel
+    await connect_to_rabbitmq()
+    yield  # Aquí se ejecuta la app
+    if channel:
+        await channel.close()
+    if connection:
+        await connection.close()
+    print("🛑 RabbitMQ connection closed")
+
+
+app.router.lifespan_context = lifespan
 
 
 @app.post("/upload_program/")
@@ -51,11 +67,12 @@ async def upload_document(
         "program_id": program_id,
     }
 
-    channel.basic_publish(
-        exchange="",
+    assert channel is not None
+    await channel.default_exchange.publish(
+        aio_pika.Message(body=json.dumps(message).encode()),
         routing_key=QUEUE_NAME,
-        body=json.dumps(message),
     )
+
     return {
         "message": "Document received",
         "file": file.filename,

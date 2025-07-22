@@ -1,4 +1,5 @@
 fastapi
 uvicorn
-pika
+aio_pika
+asyncio
 python-multipart
