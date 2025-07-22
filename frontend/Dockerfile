@@ -17,9 +17,9 @@ COPY . .
 # Exponer el puerto por defecto de Vite
 EXPOSE 5173
 
-# Usar 'node' como usuario no-root
-RUN chown -R node:node /app
-USER node
+RUN usermod -l clistenes node && groupmod -n clistenes node
+RUN chown -R clistenes:clistenes /app
+USER clistenes
 
 # Usar tini como sistema init para evitar problemas con señales y zombies
 ENTRYPOINT ["/usr/bin/tini", "--"]

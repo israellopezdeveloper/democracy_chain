@@ -13,8 +13,9 @@ RUN chmod +x ./scripts/deploy_n_run.sh
 
 EXPOSE 3000
 
-RUN chown -R node:node /app
-USER node
+RUN usermod -l clistenes node && groupmod -n clistenes node
+RUN chown -R clistenes:clistenes /app
+USER clistenes
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["sh", "-c", "./scripts/deploy_n_run.sh --network=localhost --contract=DemocracyChain; node ./scripts/server.mjs & ./scripts/deploy_n_run.sh"]
