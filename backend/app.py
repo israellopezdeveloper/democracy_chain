@@ -91,7 +91,11 @@ async def upload_file(
 ):
     file_id = str(uuid.uuid4())
     filename: str = file_id + ("_" + file.filename if file.filename else "")
-    file_path = os.path.join(UPLOAD_DIR, filename)
+
+    user_dir = os.path.join(UPLOAD_DIR, wallet_address)
+    os.makedirs(user_dir, exist_ok=True)
+
+    file_path = os.path.join(user_dir, filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
