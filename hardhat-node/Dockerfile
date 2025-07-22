@@ -11,8 +11,9 @@ RUN npm install && npm prune --production
 
 COPY ../dapp .
 
-RUN chown -R node:node /app
-USER node
+RUN usermod -l clistenes node && groupmod -n clistenes node
+RUN chown -R clistenes:clistenes /app
+USER clistenes
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["npx", "hardhat", "node", "--hostname", "0.0.0.0"]
