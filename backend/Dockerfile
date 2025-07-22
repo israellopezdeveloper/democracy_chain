@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código de la app
-COPY app.py .
+COPY . .
 
 # Cambiar propiedad y usar usuario no root
 RUN chown -R clistenes:clistenes /app

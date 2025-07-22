@@ -4,11 +4,14 @@ import os
 import shutil
 import uuid
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 import aio_pika
 from aio_pika.abc import AbstractChannel, AbstractRobustConnection
+from database import get_async_session, init_db
 from fastapi import FastAPI, File, Form, UploadFile, status
 from fastapi.responses import PlainTextResponse
+from models import UploadedFile
 
 app = FastAPI()
 QUEUE_NAME = "documents"
@@ -41,6 +44,7 @@ async def connect_to_rabbitmq(retries=10, delay=3):
 async def lifespan(_: FastAPI):
     global channel
     await connect_to_rabbitmq()
+    await init_db()
     yield  # Aquí se ejecuta la app
     if channel:
         await channel.close()
@@ -81,13 +85,27 @@ async def upload_document(
 
 
 @app.post("/upload_file")
-async def upload_file(file: UploadFile = File(...)):  # noqa: B008
+async def upload_file(
+    file: UploadFile = File(...),  # noqa: B008
+    wallet_address: str = Form(...),
+):
     file_id = str(uuid.uuid4())
     filename: str = file_id + ("_" + file.filename if file.filename else "")
     file_path = os.path.join(UPLOAD_DIR, filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+
+    new_record = UploadedFile(
+        filename=filename,
+        filepath=file_path,
+        wallet_address=wallet_address,
+        created_at=datetime.now(UTC),
+    )
+
+    async with get_async_session() as session:
+        session.add(new_record)
+        await session.commit()
 
     return PlainTextResponse(
         content=filename,

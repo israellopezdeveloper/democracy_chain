@@ -83,6 +83,23 @@ services:
     networks:
       - ragnet
 
+  mysql:
+    image: mysql:9.3
+    container_name: democracy-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: democracy
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ragnet
+
+
   backend:
     build:
       context: ./backend
@@ -90,6 +107,11 @@ services:
     user: "clistenes"
     volumes:
       - ./data:/data
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=democracy
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
     ports:
       - "8000:8000"
     depends_on:
@@ -112,6 +134,7 @@ services:
 
 volumes:
   qdrant_data:
+  mysql_data:
 
 networks:
   democracy:
