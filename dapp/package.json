@@ -1,0 +1,31 @@
+{
+  "type": "commonjs",
+  "name": "cryptovote",
+  "version": "1.0.0",
+  "description": "Real Democracy",
+  "license": "ISC",
+  "author": "Israel Lopez",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "lint": "npx solhint 'contracts/*.sol'",
+    "lint:fix": "npx solhint 'contracts/*.sol' --fix",
+    "format": "npx prettier --write .",
+    "coverage": "npx hardhat coverage"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.14",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "dotenv": "^17.2.0",
+    "hardhat-etherscan": "^1.0.1",
+    "hardhat-gas-reporter": "^2.3.0",
+    "inquirer": "^12.7.0",
+    "solidity-coverage": "^0.8.16"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
