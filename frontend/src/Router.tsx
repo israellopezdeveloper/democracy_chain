@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import CandidatesPage from "./pages/Candidates";
 import CitizenPage from "./pages/Citizen";
 import AboutPage from "./pages/About";
+import Viewer from "./pages/Viewer";
 import { ConnectedRoute } from "./components/ConnectedRoute";
 import Editor from "./pages/Editor";
 
@@ -17,6 +18,7 @@ export default function Router() {
             <Route path="/candidates" element={<CandidatesPage />} />
             <Route path="/citizen" element={<CitizenPage />} />
             <Route path="/editor" element={<Editor />} />
+            <Route path="/viewer" element={<Viewer />} />
           </Route>
           <Route path="/about" element={<AboutPage />} />
         </Route>

@@ -339,3 +339,13 @@ label:has(+ input:required)::after { /* :has() es relativamente nuevo, verifica 
   color: red;
   font-weight: bold;
 }
+
+
+div.viewer {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  margin-top: 1rem;
+  background-color: #FFFFFFAA;
+  color: #000000FF;
+}
