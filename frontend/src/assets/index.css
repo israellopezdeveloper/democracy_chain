@@ -258,6 +258,11 @@ div.modal * {
   width: 100%;
   top: 0px;
   left: 0px;
+  color: #000000FF;
+}
+
+div.modal button {
+  color: #FFFFFFFF;
 }
 
 div.modal input {

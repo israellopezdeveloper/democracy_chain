@@ -96,28 +96,28 @@ export class Person {
 
 export class Citizen {
   person: Person;
-  isRegistered: boolean;
+  registered: boolean;
   voted: boolean;
 
   constructor(data: CitizenInput) {
     if (Array.isArray(data)) {
-      const [personInput, isRegistered, voted] = data;
+      const [personInput, registered, voted] = data;
       this.person = new Person(personInput);
-      this.isRegistered = !!isRegistered;
+      this.registered = !!registered;
       this.voted = !!voted;
     } else if (
       data &&
       typeof data === "object" &&
       "person" in data &&
-      "isRegistered" in data &&
+      "registered" in data &&
       "voted" in data
     ) {
       this.person = new Person(data.person);
-      this.isRegistered = !!data.isRegistered;
+      this.registered = !!data.registered;
       this.voted = !!data.voted;
     } else {
       this.person = new Person(null);
-      this.isRegistered = false;
+      this.registered = false;
       this.voted = false;
     }
   }
