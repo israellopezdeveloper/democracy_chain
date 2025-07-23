@@ -4,6 +4,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import { ResizableImage } from '../components/ResizableImage'
 import '../assets/TiptapEditor.css'
 import { useAccount } from 'wagmi'
+import { useEffect, useState } from 'react'
 import {
   FaListUl,
   FaListOl,
@@ -26,6 +27,53 @@ import {
 export default function TiptapEditor() {
   const { address } = useAccount();
 
+  const [initialContent, setInitialContent] = useState<string | null>(null)
+  const [showSidebar, setShowSidebar] = useState(false)
+  const [files, setFiles] = useState<string[]>([])
+
+  const loadFileList = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/${address}/file`);
+      const data = await res.json();
+      setFiles(data);
+    } catch (err) {
+      console.error('Error al cargar archivos:', err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/${address}/program`)
+        if (!res.ok) throw new Error('No program found')
+        const text = await res.text()
+        setInitialContent(text)
+      } catch (err) {
+        console.warn('No saved content or error loading:', err)
+        setInitialContent('<p></p>')
+      }
+    }
+
+    if (address) {
+      fetchContent();
+      loadFileList();
+    }
+  }, [address])
+
+  const toggleSidebar = async () => {
+    if (!showSidebar) {
+      try {
+        const res = await fetch(`http://localhost:8000/${address}/file`)
+        const fileList = await res.json()
+        setFiles(fileList)
+      } catch (err) {
+        console.error('Error fetching files:', err)
+        alert('No se pudieron cargar los archivos')
+      }
+    }
+    setShowSidebar(!showSidebar)
+  }
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -34,10 +82,10 @@ export default function TiptapEditor() {
         types: ['heading', 'paragraph'],
       }),
     ],
-    content: '',
-  })
+    content: initialContent,
+  }, [initialContent])
 
-  if (!editor) return null
+  if (!editor || !initialContent) return null
 
   const handleSave = async () => {
     if (!editor) return;
@@ -60,12 +108,52 @@ export default function TiptapEditor() {
         throw new Error(`Error al guardar el contenido: ${errorText}`);
       }
 
-      alert('Contenido guardado correctamente');
     } catch (err) {
       console.error(err);
       alert('Fallo al guardar');
     }
   };
+
+  const handleDelete = async (fileid: string) => {
+    try {
+      await fetch(`http://localhost:8000/${address}/file/${fileid}`, {
+        method: 'DELETE',
+      });
+
+      // Eliminar nodos del editor relacionados con el fileid
+      editor?.commands.command(({ tr, state }) => {
+        const { doc } = state;
+        const positionsToDelete: number[] = [];
+
+        doc.descendants((node, pos) => {
+          const attrs = node.attrs;
+
+          // Si es una imagen con ese fileid
+          if (node.type.name === 'resizableImageWrapper' && attrs['data-fileid'] === fileid) {
+            positionsToDelete.push(pos);
+          }
+
+          // Si es un link que contiene el fileid
+          if (node.type.name === 'text' && attrs?.link?.href?.includes(`/file/${fileid}/download`)) {
+            positionsToDelete.push(pos);
+          }
+
+          return true;
+        });
+
+        positionsToDelete.reverse().forEach(pos => {
+          tr.delete(pos, pos + 1);
+        });
+
+        editor.view.dispatch(tr);
+        return true;
+      });
+
+    } catch (err) {
+    }
+    loadFileList(); // refrescar lista
+  };
+
 
 
   return (
@@ -73,6 +161,30 @@ export default function TiptapEditor() {
       <div className="tiptap-toolbar">
         <button onClick={handleSave}>
           <FaSave />
+        </button>
+        <button
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded"
+          onClick={async () => {
+            if (!confirm('¿Seguro que quieres borrar el programa?')) return;
+
+            try {
+              const res = await fetch(`http://localhost:8000/${address}/program`, {
+                method: 'DELETE',
+              });
+
+              if (!res.ok) throw new Error(await res.text());
+              setInitialContent("<p></p>")
+            } catch (err) {
+              console.error('Error al eliminar el programa:', err);
+              alert('Error al eliminar el programa');
+            }
+          }}
+        >
+          🗑️
+        </button>
+        <span className="separator" />
+        <button onClick={toggleSidebar}>
+          <FaDatabase />
         </button>
         <span className="separator" />
         <button onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'active' : ''}>
@@ -175,7 +287,7 @@ export default function TiptapEditor() {
                 src,
                 'data-fileid': fileid,
               }).run();
-
+              loadFileList()
             } catch (err) {
               console.error('Error al subir imagen:', err);
               alert('Error al subir la imagen');
@@ -243,6 +355,7 @@ export default function TiptapEditor() {
               const linkHtml = `<a href="${downloadUrl}" download target="_blank" rel="noopener noreferrer">${icon} ${file.name}</a>`;
 
               editor.chain().focus().insertContent(linkHtml).run();
+              loadFileList()
             } catch (err) {
               console.error('Error al subir archivo:', err);
               alert('Error al subir el archivo');
@@ -251,11 +364,50 @@ export default function TiptapEditor() {
             e.target.value = '';
           }}
         />
-        <span className="separator" />
       </div>
 
-      <div className="tiptap-editor">
-        <EditorContent editor={editor} />
+      <div className="editor-wrapper">
+        {showSidebar && (
+          <div className="sidebar-overlay">
+            <div className="sidebar">
+              {files.map((file) => {
+                const isImage = file.filename.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i);
+                const downloadUrl = `http://localhost:8000/${address}/file/${file.filename}/download`;
+
+                return (
+                  <div key={file.filename} className="file-item">
+                    <div className="file-preview">
+                      {isImage ? (
+                        <img src={downloadUrl} alt={file.filename} />
+                      ) : (
+                        <img src="/file-icon.png" alt="Archivo" />
+                      )}
+                    </div>
+                    <div className="file-name">
+                      <a
+                        href={downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Descargar archivo"
+                      >
+                        {file.filename}
+                      </a>
+                    </div>
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDelete(file.filename)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div className="tiptap-editor">
+          <EditorContent editor={editor} />
+        </div>
       </div>
     </div>
   )

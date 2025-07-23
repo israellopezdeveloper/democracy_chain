@@ -15,8 +15,8 @@ export default function Layout() {
         <div className="parallax-layer front"></div>
       </div>
       <main className="relative z-10">
-        <Outlet />
       </main>
+      <Outlet />
     </>
   );
 }

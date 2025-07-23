@@ -47,7 +47,7 @@ export default function CandidatesPage() {
       await contract.write.vote({
         args: [wallet],
       });
-      setTimeout(async () => { await fetchCandidates(); }, 1000000);
+      setTimeout(async () => { await fetchCandidates(); }, 100000);
     } catch (e) {
       console.error("Error al votar:", e);
       setShowErrorCandidateModal(true); // ✅ Mostrar modal
