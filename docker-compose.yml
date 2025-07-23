@@ -106,6 +106,7 @@ services:
     container_name: democracy-backend
     user: "clistenes"
     volumes:
+      - ./backend:/app # Eliminar cuando haya terminado de desarrollar
       - ./data:/data
     environment:
       - MYSQL_HOST=mysql
