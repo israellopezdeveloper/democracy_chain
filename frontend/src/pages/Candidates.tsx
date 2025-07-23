@@ -5,6 +5,7 @@ import { Modal } from "../components/Modal";
 interface CandidateItem {
   dni: string;
   name: string;
+  wallet: string;
   votes: bigint;
 }
 
@@ -24,7 +25,10 @@ export default function CandidatesPage() {
         // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(await contract.read.getCandidateByIndex([i]));
         list.push({
-          dni: candidate.citizen.person.dni, name: candidate.citizen.person.name, votes: candidate.voteCount
+          dni: candidate.citizen.person.dni,
+          name: candidate.citizen.person.name,
+          wallet: candidate.citizen.person.wallet,
+          votes: candidate.voteCount,
         })
       }
       setCandidates(list);
@@ -83,6 +87,7 @@ export default function CandidatesPage() {
                         <th>Nombre</th>
                         <th>Votos</th>
                         <th>Votar</th>
+                        <th>Programa</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -104,6 +109,19 @@ export default function CandidatesPage() {
                             >
                               🗳️
                             </button>
+                          </td>
+                          <td>
+                            <a
+                              href={`/viewer?wallet=${encodeURIComponent(c.wallet)}&name=${encodeURIComponent(c.name)}`}
+                              rel="noopener noreferrer"
+                              title="Ver programa"
+                              style={{
+                                fontSize: "1.2rem",
+                                textDecoration: "none",
+                              }}
+                            >
+                              📄
+                            </a>
                           </td>
                         </tr>
                       ))}

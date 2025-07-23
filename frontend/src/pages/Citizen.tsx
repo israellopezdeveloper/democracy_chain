@@ -7,6 +7,8 @@ export default function CitizenPage() {
   const [newName, setNewName] = useState("");
   const [newCandidate, setNewCandidate] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isCandidateRegistered, setIsCandidateRegistered] = useState(false);
+
 
   const handleAddCitizen = async () => {
     if (!newDni || !newName || !contract) return;
@@ -46,6 +48,10 @@ export default function CitizenPage() {
         // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(await contract.read.getCandidate([citizen.person.dni]))
         setNewCandidate(candidate.citizen.person.wallet !== '0x0000000000000000000000000000000000000000')
+        if (candidate.citizen.person.wallet !== '0x0000000000000000000000000000000000000000') {
+          setIsCandidateRegistered(true);
+        }
+
       }
     } catch (e) {
       console.log("No existe", e)
@@ -109,9 +115,17 @@ export default function CitizenPage() {
             />
           </div>
           <div className="form-button-container">
-            <button
-              onClick={handleAddCitizen}
-            >Guardar</button>
+            {!isCandidateRegistered ? (
+              <button onClick={handleAddCitizen}>
+                Guardar
+              </button>
+            ) : (
+              <a href="/editor">
+                <button>
+                  Crear Programa
+                </button>
+              </a>
+            )}
           </div>
         </div>
       </div>

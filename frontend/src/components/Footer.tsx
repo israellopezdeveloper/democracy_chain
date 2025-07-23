@@ -29,7 +29,7 @@ export default function Footer() {
   return (
     <>
       <footer className="footer" >
-        <div>📅 inscripcion: {newRegistrationDate}</div>  <div>📅 votacion: {newVotingDate}</div>
+        <div>📅 Inscripción: {newRegistrationDate}</div>  <div>📅 Votación: {newVotingDate}</div>
       </footer>
     </>
   );
