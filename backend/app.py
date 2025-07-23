@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import os
 import shutil
 import uuid
@@ -7,7 +8,6 @@ from datetime import UTC, datetime
 
 import aio_pika
 from aio_pika.abc import AbstractChannel, AbstractRobustConnection
-from sqlalchemy import func
 from database import get_async_session, init_db
 from fastapi import (
     FastAPI,
@@ -18,12 +18,21 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from models import UploadedFile
+from sqlalchemy import func
 from sqlmodel import select
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 QUEUE_NAME = "documents"
 UPLOAD_DIR = "/data/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -79,7 +88,8 @@ async def program(
     os.makedirs(user_dir, exist_ok=True)
     file_path = os.path.join(user_dir, filename)
 
-    if os.path.exists(file_path) and not overwrite:
+    main_exists = os.path.exists(file_path)
+    if main_exists and not overwrite:
         raise HTTPException(
             status_code=HTTP_409_CONFLICT,
             detail="A program file already exists for this wallet.",
@@ -89,16 +99,17 @@ async def program(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Crear entrada en la base de datos
-    new_record = UploadedFile(
-        filename=filename,
-        wallet_address=wallet_address,
-        created_at=datetime.now(UTC),
-    )
+    if not main_exists:
+        # Crear entrada en la base de datos
+        new_record = UploadedFile(
+            filename=filename,
+            wallet_address=wallet_address,
+            created_at=datetime.now(UTC),
+        )
 
-    async with get_async_session() as session:
-        session.add(new_record)
-        await session.commit()
+        async with get_async_session() as session:
+            session.add(new_record)
+            await session.commit()
 
     return PlainTextResponse(
         content=filename,
@@ -271,6 +282,42 @@ async def download_file(
         filename=filename,
         media_type="application/octet-stream",
     )
+
+
+@app.get(
+    "/{wallet_address}/file/{filename}/base64",
+    response_class=PlainTextResponse,
+)
+async def get_file_base64(wallet_address: str, filename: str):
+    file_path = os.path.join(UPLOAD_DIR, wallet_address, filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="File not found",
+        )
+
+    try:
+        with open(file_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("utf-8")
+
+        # Detect MIME type from extension (basic)
+        mime = "image/png"
+        if filename.endswith(".jpg") or filename.endswith(".jpeg"):
+            mime = "image/jpeg"
+        elif filename.endswith(".gif"):
+            mime = "image/gif"
+        elif filename.endswith(".webp"):
+            mime = "image/webp"
+
+        data_url = f"data:{mime};base64,{encoded}"
+        return PlainTextResponse(content=data_url)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error reading file: {str(e)}",
+        ) from e
 
 
 #   Remove

@@ -65,6 +65,7 @@ export default function Navbar() {
             <NavbarItem title="Inicio" href="/" />
             <NavbarItem title="Ciudadano" href="/citizen" />
             <NavbarItem title="Candidatos" href="/candidates" />
+            <NavbarItem title="Editor" href="/editor" />
             <NavbarItem title="Sobre mi" href="/about" />
           </div>
         </div>

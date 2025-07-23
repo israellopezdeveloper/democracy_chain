@@ -175,6 +175,12 @@ main > div {
   max-width: 800px;
 }
 
+main > div.GrapesJsApp {
+  width: 95vw;
+  max-width: none;
+  height: 81.7vh;
+}
+
 /* Tabla principal */
 .table-container {
   background: rgba(255, 255, 255, 0.85);
