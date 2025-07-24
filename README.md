@@ -94,6 +94,12 @@ See [`TODO.md`](TODO.md) for pending features and ideas like vote auditing, user
 
 ---
 
+## 🗺️ ROADMAP
+
+See [`ROADMAP.md`](ROADMAP.md).
+
+---
+
 ## 🧠 Motivation
 
 This project aims to make democratic voting more transparent and verifiable using smart contracts, so results can be audited and trusted by all participants.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_URL="http://localhost:8000"
+BASE_URL="http://localhost:8000/api/v1"
 WALLET="0x$(openssl rand -hex 20)"  # 40 caracteres, estilo Ethereum
 
 echo "🪪 Wallet generado: $WALLET"
@@ -35,7 +35,8 @@ upload_program() {
     -F "file=@${FILEPATH}" \
     -F "overwrite=${OVERWRITE}")
 
-  echo "✅ Subido como: $RESPONSE"
+  echo "✅ Subido como:"
+  echo "$RESPONSE"
 }
 
 delete_program() {
@@ -62,7 +63,8 @@ upload_file() {
   FILEPATH="${REPLY}"
   RESPONSE=$(curl -s -X POST "$BASE_URL/${WALLET}/file" \
     -F "file=@${FILEPATH}")
-  echo "✅ Subido como: $RESPONSE"
+  echo "✅ Subido como:"
+  echo "$RESPONSE"
 }
 
 list_files() {
@@ -70,7 +72,7 @@ list_files() {
   if [[ "$RESPONSE" == "[]" ]]; then
     echo "📭 No hay archivos para $WALLET"
   else
-    echo "$RESPONSE" | jq 
+    echo "$RESPONSE"  | jq 
   fi
 }
 
@@ -87,7 +89,8 @@ delete_one() {
   select FILENAME in "${FILES[@]}"; do
     if [[ -n "$FILENAME" ]]; then
       RESPONSE=$(curl -s -X DELETE "$BASE_URL/${WALLET}/file/${FILENAME}")
-      echo "✅ $RESPONSE"
+      echo "✅"
+      echo "$RESPONSE" | jq
       return
     else
       echo "❌ Selección inválida."
@@ -99,7 +102,8 @@ delete_all() {
   read -rp "⚠️ ¿Eliminar TODOS los archivos de $WALLET? (y/n): " CONFIRM
   if [[ "$CONFIRM" == "y" ]]; then
     RESPONSE=$(curl -s -X DELETE "$BASE_URL/${WALLET}/file")
-    echo "✅ $RESPONSE"
+    echo "✅"
+    echo "$RESPONSE" | jq
   else
     echo "❎ Cancelado."
   fi
@@ -132,7 +136,7 @@ list_wallets() {
   if [[ "$RESPONSE" == "[]" ]]; then
     echo "📭 No hay carteras registradas aún."
   else
-    echo "$RESPONSE" | jq
+    echo "$RESPONSE"  | jq
   fi
 }
 
@@ -152,7 +156,8 @@ delete_wallet() {
       read -rp "⚠️ ¿Seguro que deseas eliminar la cartera $WALLET_TO_DELETE? (y/n): " CONFIRM
       if [[ "$CONFIRM" == "y" ]]; then
         RESPONSE=$(curl -s -X DELETE "$BASE_URL/$WALLET_TO_DELETE")
-        echo "✅ $RESPONSE"
+        echo "✅"
+        echo "$RESPONSE" | jq
       else
         echo "❎ Cancelado."
       fi

@@ -1,12 +1,15 @@
-FROM python:3.12-slim
+FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime
 
 # Crear usuario no root
-RUN adduser --disabled-password --gecos '' clistenes
+RUN useradd -m clistenes
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Instalar dependencias
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY ingest.py .
 
@@ -15,3 +18,4 @@ RUN chown -R clistenes:clistenes /app
 USER clistenes
 
 CMD ["python", "ingest.py"]
+

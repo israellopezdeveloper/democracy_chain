@@ -1,87 +1,88 @@
 services:
-  hardhat-node:
-    build:
-      context: .
-      dockerfile: ./hardhat-node/Dockerfile
-    container_name: democracy-hardhat-node
-    ports:
-      - "8545:8545"
-    environment:
-      - NODE_ENV=production
-    user: "clistenes"
-    networks:
-      - democracy
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+  # hardhat-node:
+  #   build:
+  #     context: .
+  #     dockerfile: ./hardhat-node/Dockerfile
+  #   container_name: democracy-hardhat-node
+  #   ports:
+  #     - "8545:8545"
+  #   environment:
+  #     - NODE_ENV=production
+  #   user: "clistenes"
+  #   networks:
+  #     - democracy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
 
-  deployer-interactor:
-    build:
-      context: ./dapp
-    container_name: democracy-deployer-interactor
-    ports:
-      - "3000:3000"
-    stdin_open: true
-    tty: true
-    environment:
-      - NODE_ENV=production
-      - HARDHAT_URL=http://hardhat-node:8545
-    user: "clistenes"
-    depends_on:
-      - hardhat-node
-    networks:
-      - democracy
-    volumes: # Eliminar cuando haya terminado de desarrollar
-      - ./dapp:/app
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+  # deployer-interactor:
+  #   build:
+  #     context: ./dapp
+  #   container_name: democracy-deployer-interactor
+  #   ports:
+  #     - "3000:3000"
+  #   stdin_open: true
+  #   tty: true
+  #   environment:
+  #     - NODE_ENV=production
+  #     - HARDHAT_URL=http://hardhat-node:8545
+  #   user: "clistenes"
+  #   depends_on:
+  #     - hardhat-node
+  #   networks:
+  #     - democracy
+  #   volumes: # Eliminar cuando haya terminado de desarrollar
+  #     - ./dapp:/app
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
 
-  frontend:
-    build:
-      context: ./frontend
-    container_name: democracy-frontend
-    ports:
-      - "80:5173"
-    environment:
-      - NODE_ENV=development # production
-      - VITE_HARDHAT_URL=http://hardhat-node:8545
-    user: "clistenes"
-    depends_on:
-      - hardhat-node
-      - deployer-interactor
-    networks:
-      - democracy
-    volumes: # Eliminar cuando haya terminado de desarrollar
-      - ./frontend:/app
-      - /app/node_modules
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: democracy-qdrant
-    ports:
-      - "6333:6333"
-    networks:
-      - ragnet
-    volumes:
-      - qdrant_data:/qdrant/storage
-
-  rabbitmq:
-    build:
-      context: ./rabbitmq
-    container_name: democracy-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    user: "clistenes"
-    networks:
-      - ragnet
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: democracy-frontend
+  #   ports:
+  #     - "80:5173"
+  #   environment:
+  #     - NODE_ENV=development # production
+  #     - VITE_HARDHAT_URL=http://hardhat-node:8545
+  #     - VITE_BACKEND_URL=http://localhost:8000/api/v1
+  #   user: "clistenes"
+  #   depends_on:
+  #     - hardhat-node
+  #     - deployer-interactor
+  #   networks:
+  #     - democracy
+  #   volumes: # Eliminar cuando haya terminado de desarrollar
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
+  #
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: democracy-qdrant
+  #   ports:
+  #     - "6333:6333"
+  #   networks:
+  #     - ragnet
+  #   volumes:
+  #     - qdrant_data:/qdrant/storage
+  #
+  # rabbitmq:
+  #   build:
+  #     context: ./rabbitmq
+  #   container_name: democracy-rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   user: "clistenes"
+  #   networks:
+  #     - ragnet
 
   mysql:
     image: mysql:9.3
@@ -115,23 +116,32 @@ services:
       - MYSQL_PASSWORD=password
     ports:
       - "8000:8000"
-    depends_on:
-      - rabbitmq
-      - qdrant
+    # depends_on:
+    #   - rabbitmq
+    #   - qdrant
     networks:
       - ragnet
 
-  worker:
-    build: ./worker
-    container_name: democracy-worker
-    user: "clistenes"
-    volumes:
-      - ./data:/data
-    depends_on:
-      - rabbitmq
-      - qdrant
-    networks:
-      - ragnet
+  # worker:
+  #   build: ./worker
+  #   container_name: democracy-worker
+  #   user: "clistenes"
+  #   volumes:
+  #     - ./data:/data
+  #   depends_on:
+  #     - rabbitmq
+  #     - qdrant
+  #   networks:
+  #     - ragnet
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: [gpu]
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #   runtime: nvidia
+
 
 volumes:
   qdrant_data:

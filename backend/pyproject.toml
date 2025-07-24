@@ -1,0 +1,38 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Backend service for the democracy project"
+packages = [{ include = "backend", from = "src" }]
+authors = [
+    {name = "israellopezdeveloper",email = "israel.lopez.developer@gmail.com"}
+]
+requires-python = "^3.12"
+dependencies = [
+    "fastapi (>=0.116.1,<0.117.0)",
+    "sqlalchemy (>=2.0.41,<3.0.0)",
+    "pymysql (>=1.1.1,<2.0.0)",
+    "aio-pika (>=9.5.5,<10.0.0)",
+    "qdrant-client (>=1.15.0,<2.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "pydantic (>=2.11.7,<3.0.0)",
+    "uvicorn[standard] (>=0.35.0,<0.36.0)",
+    "pydantic-settings (>=2.10.1,<3.0.0)",
+    "sqlmodel (>=0.0.24,<0.0.25)",
+    "asyncmy (>=0.2.10,<0.3.0)",
+    "python-magic (>=0.4.27,<0.5.0)",
+    "python-multipart (>=0.0.20,<0.0.21)",
+    "cryptography (>=45.0.5,<46.0.0)",
+    "aiomysql (>=0.2.0,<0.3.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+httpx = "^0.28.1"
+black = "^25.1.0"
+isort = "^6.0.1"
+mypy = "^1.17.0"
+

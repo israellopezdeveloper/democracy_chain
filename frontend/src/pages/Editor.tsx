@@ -96,10 +96,11 @@ export default function TiptapEditor() {
   const [initialContent, setInitialContent] = useState<string | null>(null)
   const [showSidebar, setShowSidebar] = useState(false)
   const [files, setFiles] = useState<FileJSON[]>([])
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const loadFileList = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/${address}/file`);
+      const res = await fetch(`${BACKEND_URL}/${address}/file`);
       const data = await res.json();
       setFiles(data);
     } catch (err) {
@@ -110,7 +111,7 @@ export default function TiptapEditor() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/${address}/program`)
+        const res = await fetch(`${BACKEND_URL}/${address}/program`)
         if (!res.ok) throw new Error('No program found')
         const text = await res.text()
         setInitialContent(text)
@@ -129,7 +130,7 @@ export default function TiptapEditor() {
   const toggleSidebar = async () => {
     if (!showSidebar) {
       try {
-        const res = await fetch(`http://localhost:8000/${address}/file`)
+        const res = await fetch(`${BACKEND_URL}/${address}/file`)
         const fileList = await res.json()
         setFiles(fileList)
       } catch (err) {
@@ -181,7 +182,7 @@ export default function TiptapEditor() {
     formData.append('overwrite', 'true'); // o false según tu lógica
 
     try {
-      const res = await fetch(`http://localhost:8000/${address}/program`, {
+      const res = await fetch(`${BACKEND_URL}/${address}/program`, {
         method: 'POST',
         body: formData,
       });
@@ -199,7 +200,7 @@ export default function TiptapEditor() {
 
   const handleDelete = async (fileid: string) => {
     try {
-      await fetch(`http://localhost:8000/${address}/file/${fileid}`, {
+      await fetch(`${BACKEND_URL}/${address}/file/${fileid}`, {
         method: 'DELETE',
       });
 
@@ -251,7 +252,7 @@ export default function TiptapEditor() {
             if (!confirm('¿Seguro que quieres borrar el programa?')) return;
 
             try {
-              const res = await fetch(`http://localhost:8000/${address}/program`, {
+              const res = await fetch(`${BACKEND_URL}/${address}/program`, {
                 method: 'DELETE',
               });
 
@@ -351,7 +352,7 @@ export default function TiptapEditor() {
             formData.append('file', file);
 
             try {
-              let res = await fetch(`http://localhost:8000/${address}/file`, {
+              let res = await fetch(`${BACKEND_URL}/${address}/file`, {
                 method: 'POST',
                 body: formData,
               });
@@ -360,7 +361,7 @@ export default function TiptapEditor() {
 
               const fileid = await res.text();
 
-              res = await fetch(`http://localhost:8000/${address}/file/${fileid}/base64`, {
+              res = await fetch(`${BACKEND_URL}/${address}/file/${fileid}/base64`, {
                 method: 'GET',
               });
 
@@ -394,7 +395,7 @@ export default function TiptapEditor() {
             formData.append('file', file);
 
             try {
-              const res = await fetch(`http://localhost:8000/${address}/file`, {
+              const res = await fetch(`${BACKEND_URL}/${address}/file`, {
                 method: 'POST',
                 body: formData,
               });
@@ -402,7 +403,7 @@ export default function TiptapEditor() {
               if (res.status !== 201) throw new Error('Fallo al subir archivo');
 
               const fileid = await res.text();
-              const downloadUrl = `http://localhost:8000/${address}/file/${fileid}/download`;
+              const downloadUrl = `${BACKEND_URL}/${address}/file/${fileid}/download`;
 
               const ext = file.name.split('.').pop()?.toLowerCase() || '';
               const icon = extensionIcons[ext] || '📎';
@@ -427,12 +428,12 @@ export default function TiptapEditor() {
             <div className="sidebar">
               {files.map((file) => {
                 const isImage = file.mime_type.startsWith("image/");
-                const downloadUrl = `http://localhost:8000/${address}/file/${file.filename}/download`;
+                const downloadUrl = `${BACKEND_URL}/${address}/file/${file.filename}/download`;
 
                 const handleInsert = async () => {
                   if (!editor) return;
                   if (isImage) {
-                    const res = await fetch(`http://localhost:8000/${address}/file/${file.filename}/base64`, {
+                    const res = await fetch(`${BACKEND_URL}/${address}/file/${file.filename}/base64`, {
                       method: 'GET',
                     });
 
