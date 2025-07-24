@@ -6,3 +6,4 @@ sqlmodel[asyncio]
 aiomysql
 python-multipart
 cryptography
+python-magic

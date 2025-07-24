@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Modal } from "../components/Modal";
 
 export default function ViewerPage() {
   const [searchParams] = useSearchParams();
@@ -27,9 +28,17 @@ export default function ViewerPage() {
     fetchProgram();
   }, [wallet]);
 
-  if (!wallet) return <p>❌ No se especificó ningún wallet.</p>;
-  if (error) return <p>❌ Error: {error}</p>;
-  if (!content) return <p>⏳ Cargando programa...</p>;
+  if (!wallet || error || !content) {
+    return (
+      <Modal
+        title="📃 Error"
+        message="No existe el programa"
+        onClose={() => { }}
+        autoCloseDelay={4000}
+        redirectTo='/candidates'
+      />
+    )
+  }
 
 
   return (<main>

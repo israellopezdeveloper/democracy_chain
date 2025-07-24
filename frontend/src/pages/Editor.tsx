@@ -23,13 +23,79 @@ import {
   FaSave,
 } from 'react-icons/fa'
 
+type FileJSONInput =
+  | { filename: string; wallet_address: string; created_at: string, mime_type: string; }
+  | [string, string, string, string]
+  | null;
+// Mapeo de extensiones a emojis
+const extensionIcons: Record<string, string> = {
+  pdf: '📄',
+  doc: '📝',
+  docx: '📝',
+  xls: '📊',
+  xlsx: '📊',
+  csv: '📑',
+  zip: '🗜️',
+  rar: '🗜️',
+  ppt: '📽️',
+  pptx: '📽️',
+  txt: '📄',
+  md: '📘',
+  json: '🧾',
+  js: '📟',
+  ts: '📟',
+  java: '☕',
+  cpp: '🧠',
+  py: '🐍',
+  mp4: '🎬',
+  mp3: '🎵',
+  jpg: '🖼️',
+  jpeg: '🖼️',
+  png: '🖼️',
+  gif: '🖼️',
+};
+
+
+class FileJSON {
+  filename: string;
+  wallet_address: string;
+  created_at: string;
+  mime_type: string;
+
+  constructor(data: FileJSONInput) {
+    if (Array.isArray(data)) {
+      const [filename, wallet_address, created_at, mime_type] = data;
+      this.filename = filename;
+      this.wallet_address = wallet_address;
+      this.created_at = created_at;
+      this.mime_type = mime_type;
+    } else if (
+      data &&
+      typeof data === "object" &&
+      "filename" in data &&
+      "wallet_address" in data &&
+      "created_at" in data &&
+      "mime_type" in data
+    ) {
+      this.filename = data.filename;
+      this.wallet_address = data.wallet_address;
+      this.created_at = data.created_at;
+      this.mime_type = data.mime_type;
+    } else {
+      this.filename = "";
+      this.wallet_address = "0x0000000000000000000000000000000000000000";
+      this.created_at = "";
+      this.mime_type = "";
+    }
+  }
+}
 
 export default function TiptapEditor() {
   const { address } = useAccount();
 
   const [initialContent, setInitialContent] = useState<string | null>(null)
   const [showSidebar, setShowSidebar] = useState(false)
-  const [files, setFiles] = useState<string[]>([])
+  const [files, setFiles] = useState<FileJSON[]>([])
 
   const loadFileList = async () => {
     try {
@@ -84,6 +150,23 @@ export default function TiptapEditor() {
     ],
     content: initialContent,
   }, [initialContent])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const isSaveCombo = (isMac && event.metaKey && event.key === 's') || (!isMac && event.ctrlKey && event.key === 's');
+
+      if (isSaveCombo) {
+        event.preventDefault();
+        handleSave(); // ya definida en tu componente
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editor]);
 
   if (!editor || !initialContent) return null
 
@@ -310,34 +393,6 @@ export default function TiptapEditor() {
             const formData = new FormData();
             formData.append('file', file);
 
-            // Mapeo de extensiones a emojis
-            const extensionIcons: Record<string, string> = {
-              pdf: '📄',
-              doc: '📝',
-              docx: '📝',
-              xls: '📊',
-              xlsx: '📊',
-              csv: '📑',
-              zip: '🗜️',
-              rar: '🗜️',
-              ppt: '📽️',
-              pptx: '📽️',
-              txt: '📄',
-              md: '📘',
-              json: '🧾',
-              js: '📟',
-              ts: '📟',
-              java: '☕',
-              cpp: '🧠',
-              py: '🐍',
-              mp4: '🎬',
-              mp3: '🎵',
-              jpg: '🖼️',
-              jpeg: '🖼️',
-              png: '🖼️',
-              gif: '🖼️',
-            };
-
             try {
               const res = await fetch(`http://localhost:8000/${address}/file`, {
                 method: 'POST',
@@ -371,11 +426,39 @@ export default function TiptapEditor() {
           <div className="sidebar-overlay">
             <div className="sidebar">
               {files.map((file) => {
-                const isImage = file.filename.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i);
+                const isImage = file.mime_type.startsWith("image/");
                 const downloadUrl = `http://localhost:8000/${address}/file/${file.filename}/download`;
 
+                const handleInsert = async () => {
+                  if (!editor) return;
+                  if (isImage) {
+                    const res = await fetch(`http://localhost:8000/${address}/file/${file.filename}/base64`, {
+                      method: 'GET',
+                    });
+
+                    const src = await res.text();
+
+                    editor.chain().focus().setImage({
+                      src,
+                      'data-fileid': file.filename,
+                    }).run();
+                  } else {
+                    const ext = file.filename.split('.').pop()?.toLowerCase() || '';
+                    const icon = extensionIcons[ext] || '📎';
+
+                    const linkHtml = `<a href="${downloadUrl}" download target="_blank" rel="noopener noreferrer">${icon} ${file.filename.substring(file.filename.indexOf("_") + 1)}</a>`;
+
+                    editor.chain().focus().insertContent(linkHtml).run();
+                  }
+                };
+
                 return (
-                  <div key={file.filename} className="file-item">
+                  <div
+                    key={file.filename}
+                    className="file-item"
+                    onClick={handleInsert}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="file-preview">
                       {isImage ? (
                         <img src={downloadUrl} alt={file.filename} />
@@ -389,13 +472,17 @@ export default function TiptapEditor() {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Descargar archivo"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {file.filename}
+                        {file.filename.substring(file.filename.indexOf("_") + 1)}
                       </a>
                     </div>
                     <button
                       className="delete-button"
-                      onClick={() => handleDelete(file.filename)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(file.filename);
+                      }}
                     >
                       🗑️
                     </button>

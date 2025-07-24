@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
 import aio_pika
+import magic
 from aio_pika.abc import AbstractChannel, AbstractRobustConnection
 from database import get_async_session, init_db
 from fastapi import (
@@ -24,6 +25,15 @@ from models import UploadedFile
 from sqlalchemy import func
 from sqlmodel import select
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
+
+
+def detect_mime_type(file_path: str) -> str:
+    try:
+        mime = magic.Magic(mime=True)
+        return mime.from_file(file_path)
+    except Exception:
+        return "application/octet-stream"
+
 
 app = FastAPI()
 app.add_middleware(
@@ -100,11 +110,13 @@ async def program(
         shutil.copyfileobj(file.file, buffer)
 
     if not main_exists:
+        mime_type = detect_mime_type(file_path)
         # Crear entrada en la base de datos
         new_record = UploadedFile(
             filename=filename,
             wallet_address=wallet_address,
             created_at=datetime.now(UTC),
+            mime_type=mime_type,
         )
 
         async with get_async_session() as session:
@@ -186,11 +198,12 @@ async def upload_file(
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-
+    mime_type = detect_mime_type(file_path)
     new_record = UploadedFile(
         filename=filename,
         wallet_address=wallet_address,
         created_at=datetime.now(UTC),
+        mime_type=mime_type,
     )
 
     async with get_async_session() as session:
@@ -221,6 +234,7 @@ async def get_files(
                     "filename": file.filename,
                     "wallet_address": file.wallet_address,
                     "created_at": file.created_at.isoformat(),
+                    "mime_type": file.mime_type,
                 }
                 for file in files
                 if file.filename != "main"
@@ -252,6 +266,7 @@ async def get_file(
                 "filename": file.filename,
                 "wallet_address": file.wallet_address,
                 "created_at": file.created_at.isoformat(),
+                "mime_type": file.mime_type,
             },
         )
 
