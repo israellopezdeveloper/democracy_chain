@@ -6,6 +6,7 @@ export default function ViewerPage() {
   const [searchParams] = useSearchParams();
   const wallet = searchParams.get('wallet');
   const name = searchParams.get('name');
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +16,7 @@ export default function ViewerPage() {
 
     const fetchProgram = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/${wallet}/program`);
+        const res = await fetch(`${BACKEND_URL}/${wallet}/program`);
         if (!res.ok) throw new Error("Programa no encontrado");
         const text = await res.text();
 
