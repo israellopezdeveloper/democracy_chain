@@ -153,7 +153,7 @@ export default function TiptapEditor() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const isMac = navigator.userAgent.toUpperCase().includes('MAC');
       const isSaveCombo = (isMac && event.metaKey && event.key === 's') || (!isMac && event.ctrlKey && event.key === 's');
 
       if (isSaveCombo) {
