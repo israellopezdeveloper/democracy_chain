@@ -18,4 +18,4 @@ RUN chown -R clistenes:clistenes /app
 USER clistenes
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["sh", "-c", "./scripts/deploy_n_run.sh --network=localhost --contract=DemocracyChain; node ./scripts/server.mjs & ./scripts/deploy_n_run.sh"]
+CMD ["sh", "-c", "node ./scripts/server.mjs & ./scripts/deploy_n_run.sh --network=localhost --contract=DemocracyChain; while true; do ./scripts/deploy_n_run.sh; done"]

@@ -14,7 +14,7 @@ export default function CitizenPage() {
     if (!newDni || !newName || !contract) return;
     try {
       // @ts-expect-error "Dynamic ABI import"
-      const citizen: Citizen = new Citizen(await contract.read.getCitizen())
+      const citizen: Citizen = new Citizen(await contract.read.getCitizen([]))
       if (citizen.person.wallet === '0x0000000000000000000000000000000000000000') {
         if (newCandidate) {
           // @ts-expect-error "Dynamic ABI import"
@@ -30,6 +30,7 @@ export default function CitizenPage() {
         }
       }
       setIsDisabled(true)
+      setIsCandidateRegistered(true)
     } catch (e) {
       console.log("Error:", e)
     }

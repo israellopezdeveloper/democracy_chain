@@ -258,6 +258,7 @@ export default function TiptapEditor() {
 
               if (!res.ok) throw new Error(await res.text());
               setInitialContent("<p></p>")
+              editor.commands.setContent('<p></p>');
             } catch (err) {
               console.error('Error al eliminar el programa:', err);
               alert('Error al eliminar el programa');

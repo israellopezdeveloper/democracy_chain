@@ -6,8 +6,9 @@ from shutil import copyfileobj
 from uuid import uuid4
 
 import magic
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from backend.core.config import settings
 from backend.models.uploadedfile import UploadedFile
@@ -54,8 +55,9 @@ def upload_main(
 
     main_exists = os.path.exists(file_path)
     if main_exists and not overwrite:
-        raise Exception(
-            "A program file already exists for this wallet.",
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail="A program file already exists for this wallet.",
         )
 
     with open(file_path, "wb") as buffer:
@@ -72,7 +74,10 @@ def get(filename: str, wallet_address: str) -> FileResponse:
     file_path = os.path.join(settings.UPLOAD_DIR, wallet_address, filename)
 
     if not os.path.exists(file_path):
-        raise Exception("File not found")
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="File not found",
+        )
 
     return FileResponse(path=file_path, media_type=detect_mime_type(file_path))
 
@@ -81,8 +86,9 @@ def get_base64(filename: str, wallet_address: str) -> str:
     file_path = os.path.join(settings.UPLOAD_DIR, wallet_address, filename)
 
     if not os.path.exists(file_path):
-        raise Exception(
-            "File not found",
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="File not found",
         )
 
     with open(file_path, "rb") as f:

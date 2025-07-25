@@ -1,7 +1,7 @@
-1 - cls; conda activate personal; nvim
-2 - cls; loop '🚀 Hardhat node' 'sleep 15s; docker attach democracy-deployer-interactor'
-3 - cls; loop '🚢 Deploy & Run' 'docker compose stop; docker compose rm -f; docker compose up --build'
-4 - cls; set_title ' Commands'  
-5 - cls; cd dapp; loop '🧪 Tests' 'npx hardhat clean; npx hardhat compile; npx hardhat test'; cd ..
-6 - cls; set_title '📔 README'; conda activate personal; grip README.md
-7 - cls; set_title ' Commands'  
+1 - NVIM - ls; conda activate personal; nvim
+2 - 🚀 Hardhat node - cls; loop '🚀 Hardhat node' 'docker attach democracy-deployer-interactor'
+3 - 🚢 Deploy & Run - cls; loop '🚢 Deploy & Run' 'docker compose stop; docker compose rm -f; docker compose up --build'
+4 -  Commands - cls; set_title ' Commands'  
+5 - 🧪 Tests - cls; cd dapp; loop '🧪 Tests' 'npx hardhat clean; npx hardhat compile; npx hardhat test'; cd ..
+6 - 📔 README - cls; set_title '📔 README'; conda activate personal; grip README.md
+7 -  Commands - cls; set_title ' Commands'  

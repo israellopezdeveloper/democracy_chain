@@ -11,9 +11,14 @@ WORKDIR /app
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-COPY . .
+# Copiar SOLO archivos relacionados con dependencias primero
+COPY pyproject.toml poetry.lock ./
 
-# Instalar dependencias (sin entorno virtual)
+# Instalar dependencias solo si pyproject.toml o poetry.lock cambian
+RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --no-root
+
+# Copiar el resto del código fuente (esto invalida la caché solo si cambia el código)
+COPY . .
 RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
 
 # Dar permisos
@@ -22,6 +27,7 @@ RUN chown -R clistenes:clistenes /app
 # CMD ajustado para apuntar a src/main.py -> app
 COPY wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
+
 USER clistenes
 
 EXPOSE 8000

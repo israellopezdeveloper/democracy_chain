@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDemocracyContract, Candidate, Citizen } from '../hooks/useDemocracyContract'
 import { Modal } from "../components/Modal";
+import { useLocation } from 'react-router-dom';
 
 interface CandidateItem {
   dni: string;
@@ -58,12 +59,13 @@ export default function CandidatesPage() {
     }
   };
 
+  const location = useLocation();
   useEffect(() => {
     if (!contract) return;
     fetchCandidates();
     const interval = setInterval(fetchCandidates, 10000); // cada 10s
     return () => clearInterval(interval);
-  }, [contract, fetchCandidates]);
+  }, [contract, location]);
 
 
   return (
