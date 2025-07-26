@@ -1,21 +1,28 @@
-FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime
+FROM pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
 
-# Crear usuario no root
-RUN useradd -m clistenes
+# Evitar prompts durante instalaciones
+ENV DEBIAN_FRONTEND=noninteractive
 
+# Crear usuario sin privilegios
+RUN adduser --disabled-password --gecos '' clistenes
+
+# Instalar dependencias necesarias del sistema
+RUN pip install poetry
+
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-COPY requirements.txt .
+# Copiar y preparar Poetry
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-root --no-interaction --no-ansi
 
-# Instalar dependencias
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Copiar el código fuente
+COPY src src
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
 
-COPY ingest.py .
+# Usar el usuario sin privilegios
 
-# Cambiar propiedad y usar usuario no root
-RUN chown -R clistenes:clistenes /app
-USER clistenes
-
-CMD ["python", "ingest.py"]
-
+# Comando por defecto (puedes cambiarlo si usarás otro script)
+CMD ["python", "src/worker/main.py"]

@@ -1,12 +1,12 @@
 from contextlib import asynccontextmanager
 
-from database import init_db
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
 from backend.api.main import api_router
 from backend.core.config import settings
+from backend.core.db import init_db
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

@@ -1,68 +1,69 @@
 services:
-  hardhat-node:
-    build:
-      context: .
-      dockerfile: ./hardhat-node/Dockerfile
-    container_name: democracy-hardhat-node
-    ports:
-      - "8545:8545"
-    environment:
-      - NODE_ENV=production
-    user: "clistenes"
-    networks:
-      - democracy
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+  # hardhat-node:
+  #   build:
+  #     context: .
+  #     dockerfile: ./hardhat-node/Dockerfile
+  #   container_name: democracy-hardhat-node
+  #   ports:
+  #     - "8545:8545"
+  #   environment:
+  #     - NODE_ENV=production
+  #   user: "clistenes"
+  #   networks:
+  #     - democracy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
 
-  deployer-interactor:
-    build:
-      context: ./dapp
-    container_name: democracy-deployer-interactor
-    ports:
-      - "3000:3000"
-    stdin_open: true
-    tty: true
-    environment:
-      - NODE_ENV=production
-      - HARDHAT_URL=http://hardhat-node:8545
-    user: "clistenes"
-    depends_on:
-      - hardhat-node
-    networks:
-      - democracy
-    volumes: # Eliminar cuando haya terminado de desarrollar
-      - ./dapp:/app
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+  # deployer-interactor:
+  #   build:
+  #     context: ./dapp
+  #   container_name: democracy-deployer-interactor
+  #   ports:
+  #     - "3000:3000"
+  #   stdin_open: true
+  #   tty: true
+  #   environment:
+  #     - NODE_ENV=production
+  #     - HARDHAT_URL=http://hardhat-node:8545
+  #   user: "clistenes"
+  #   depends_on:
+  #     - hardhat-node
+  #   networks:
+  #     - democracy
+  #   volumes: # Eliminar cuando haya terminado de desarrollar
+  #     - ./dapp:/app
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
 
-  frontend:
-    build:
-      context: ./frontend
-    container_name: democracy-frontend
-    ports:
-      - "80:5173"
-    environment:
-      - NODE_ENV=development # production
-      - VITE_HARDHAT_URL=http://hardhat-node:8545
-      - VITE_BACKEND_URL=http://localhost:8000/api/v1
-      - VITE_CONTRACT_API_URL=http://localhost:3000
-    user: "clistenes"
-    depends_on:
-      - hardhat-node
-      - deployer-interactor
-    networks:
-      - democracy
-    volumes: # Eliminar cuando haya terminado de desarrollar
-      - ./frontend:/app
-      - /app/node_modules
-  
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: democracy-frontend
+  #   ports:
+  #     - "80:5173"
+  #   environment:
+  #     - NODE_ENV=development # production
+  #     - VITE_HARDHAT_URL=http://hardhat-node:8545
+  #     - VITE_BACKEND_URL=http://localhost:8000/api/v1
+  #     - VITE_CONTRACT_API_URL=http://localhost:3000
+  #   user: "clistenes"
+  #   depends_on:
+  #     - hardhat-node
+  #     - deployer-interactor
+  #   networks:
+  #     - democracy
+  #   volumes: # Eliminar cuando haya terminado de desarrollar
+  #     - ./frontend:/app
+  #     - /app/node_modules
+
   qdrant:
     image: qdrant/qdrant:latest
     container_name: democracy-qdrant
+    restart: unless-stopped
     ports:
       - "6333:6333"
     networks:
@@ -73,51 +74,61 @@ services:
   rabbitmq:
     build:
       context: ./rabbitmq
+      args:
+        RABBITMQ_USER: ${RABBITMQ_USER:-rabbituser}
+        RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-securepassword123}
+        RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/democracy}
     container_name: democracy-rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
-    user: "clistenes"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - ragnet
 
-  mysql:
-    image: mysql:9.3
-    container_name: democracy-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: democracy
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - ragnet
+  # mysql:
+  #   image: mysql:9.3
+  #   container_name: democracy-mysql
+  #   restart: unless-stopped
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=rootpass
+  #     - MYSQL_DATABASE=${MYSQL_DATABASE:-democracy}
+  #     - MYSQL_USER=${MYSQL_USER:-user}
+  #     - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - ragnet
 
-
-  backend:
-    build:
-      context: ./backend
-    container_name: democracy-backend
-    user: "clistenes"
-    volumes:
-      - ./backend:/app # Eliminar cuando haya terminado de desarrollar
-      - ./data:/data
-    environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_DATABASE=democracy
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
-    ports:
-      - "8000:8000"
-    depends_on:
-      - rabbitmq
-      - qdrant
-    networks:
-      - ragnet
+  # backend:
+  #   build:
+  #     context: ./backend
+  #   container_name: democracy-backend
+  #   user: "clistenes"
+  #   volumes:
+  #     - ./backend:/app # Eliminar cuando haya terminado de desarrollar
+  #     - ./data:/data
+  #   environment:
+  #     - MYSQL_URL=mysql+asyncmy://${MYSQL_USER:-user}:${MYSQL_PASSWORD:-password}@mysql:3306/${MYSQL_DATABASE:-democracy}
+  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  #     - RABBITMQ_QUEUE=democracy
+  #     - UPLOAD_DIR=/data/uploads
+  #     - FRONTEND_HOST=http://localhost
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - rabbitmq
+  #     - qdrant
+  #     - mysql
+  #   networks:
+  #     - ragnet
 
   worker:
     build: ./worker
@@ -126,8 +137,17 @@ services:
     volumes:
       - ./data:/data
     depends_on:
-      - rabbitmq
-      - qdrant
+      rabbitmq:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - RABBITMQ_QUEUE=democracy
+      - QDRANT_URL=http://qdrant:6333/
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - UPLOAD_DIR=/data/uploads
+      - NVIDIA_VISIBLE_DEVICES=all
     networks:
       - ragnet
     deploy:
@@ -135,8 +155,6 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
     runtime: nvidia
 
 

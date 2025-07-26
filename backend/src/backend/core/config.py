@@ -20,11 +20,7 @@ class Settings(BaseSettings):
     )
 
     API_V1_STR: str = "/api/v1"
-    FRONTEND_HOST: str = "http://localhost"
     ENVIRONMENT: str = "local"
-
-    QUEUE_NAME: str = "documents"
-    UPLOAD_DIR: str = "/data/uploads"
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str,
@@ -33,18 +29,15 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "Democracy Backend"
 
-    MYSQL_HOST: str
-    MYSQL_PORT: int = 3306
-    MYSQL_USER: str
-    MYSQL_PASSWORD: str
-    MYSQL_DATABASE: str
+    MYSQL_URL: str
+    RABBITMQ_URL: str = "amqp://guest:guest@rabbitmq:5672/"
+    RABBITMQ_QUEUE: str = "democracy"
+    UPLOAD_DIR: str = "/data/uploads"
+    FRONTEND_HOST: str = "http://localhost"
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        return (
-            f"mysql+asyncmy://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
-            f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
-        )
+        return f"{self.MYSQL_URL}"
 
     @property
     def all_cors_origins(self) -> list[str]:

@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-aio_pika
-asyncio
-sqlmodel[asyncio]
-aiomysql
-python-multipart
-cryptography
-python-magic

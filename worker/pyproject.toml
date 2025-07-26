@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "worker"
+version = "0.1.0"
+description = "worker que convierte archivos en embeddings y los guarda en Qdrant usando RabbitMQ"
+authors = ["israellopezdeveloper <israel.lopez.developer@gmail.com>"]
+packages = [{ include = "worker", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aio-pika = ">=9.5.5"
+qdrant-client = ">=1.15.0"
+sentence-transformers = ">=5.0.0"
+pydantic = ">=2.11.7"
+
+[tool.poetry.scripts]
+worker = "worker.main:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+black = "^25.1.0"
+isort = "^6.0.1"
+mypy = "^1.17.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
