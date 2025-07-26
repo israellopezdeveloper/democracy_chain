@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from fastapi import HTTPException
-from sqlalchemy import update
+from sqlalchemy import and_, update
 from sqlalchemy.sql.functions import count
 from sqlmodel import select
 from starlette.status import HTTP_404_NOT_FOUND
@@ -18,8 +18,10 @@ async def add(file: UploadedFile, overwrite: bool = False) -> None:
             await session.execute(
                 update(UploadedFile)
                 .where(
-                    UploadedFile.filename == file.filename,
-                    UploadedFile.wallet_address == file.wallet_address,
+                    and_(
+                        UploadedFile.filename == file.filename,
+                        UploadedFile.wallet_address == file.wallet_address,
+                    )
                 )
                 .values(
                     mime_type=file.mime_type,
@@ -110,7 +112,7 @@ async def remove_program(wallet_address: str) -> list[UploadedFile]:
         return [file for (file,) in files]
 
 
-async def remove_wallet(wallet_address: str) -> dict[str, str | int]:
+async def remove_wallet(wallet_address: str) -> list[UploadedFile]:
     async with get_async_session() as session:
         stmt = select(UploadedFile).where(
             UploadedFile.wallet_address == wallet_address,
@@ -121,6 +123,4 @@ async def remove_wallet(wallet_address: str) -> dict[str, str | int]:
         for (file,) in files:
             await session.delete(file)
         await session.commit()
-        return {
-            "wallet_address": wallet_address,
-        }
+        return [file for (file,) in files]
