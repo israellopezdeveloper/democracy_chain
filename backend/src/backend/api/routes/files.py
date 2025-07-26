@@ -2,7 +2,9 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND
 
+from backend.models.uploadedfile import UploadedFile
 from backend.services import database, storage
+from backend.services.rabbitmq import send_message
 
 router = APIRouter(tags=["files"])
 
@@ -13,12 +15,9 @@ async def upload_file(
     wallet_address: str,
     file: UploadFile = File(...),  # noqa: B008
 ) -> PlainTextResponse:
-    file_uploaded = storage.upload(file, wallet_address)
-    await database.add(
-        wallet_address,
-        file_uploaded.filename,
-        file_uploaded.mime_type,
-    )
+    file_uploaded: UploadedFile = storage.upload(file, wallet_address)
+    await database.add(file_uploaded)
+    await send_message({"file": file_uploaded.to_dict()})
 
     return PlainTextResponse(
         content=file_uploaded.filename,

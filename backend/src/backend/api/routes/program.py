@@ -6,7 +6,9 @@ from starlette.status import (
     HTTP_409_CONFLICT,
 )
 
+from backend.models.uploadedfile import UploadedFile
 from backend.services import database, storage
+from backend.services.rabbitmq import send_message
 
 router = APIRouter(tags=["programs"])
 
@@ -19,11 +21,14 @@ async def program(
     overwrite: bool = Form(False),
 ):
     try:
-        uploaded_file = storage.upload_main(file, wallet_address, overwrite)
-        await database.add(
-            wallet_address,
-            "main",
-            uploaded_file.mime_type,
+        uploaded_file: UploadedFile = storage.upload_main(
+            file, wallet_address, overwrite
+        )
+        await database.add(uploaded_file, overwrite=overwrite)
+        await send_message({"file": uploaded_file.to_dict()})
+        return PlainTextResponse(
+            content=uploaded_file.filename,
+            status_code=HTTP_201_CREATED,
         )
 
     except Exception as err:
@@ -32,11 +37,6 @@ async def program(
                 status_code=HTTP_409_CONFLICT,
                 detail="A program file already exists for this wallet.",
             ) from err
-
-    return PlainTextResponse(
-        content=uploaded_file.filename,
-        status_code=HTTP_201_CREATED,
-    )
 
 
 #   Read

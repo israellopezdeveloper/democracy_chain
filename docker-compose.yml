@@ -92,49 +92,48 @@ services:
     networks:
       - ragnet
 
-  # mysql:
-  #   image: mysql:9.3
-  #   container_name: democracy-mysql
-  #   restart: unless-stopped
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=rootpass
-  #     - MYSQL_DATABASE=${MYSQL_DATABASE:-democracy}
-  #     - MYSQL_USER=${MYSQL_USER:-user}
-  #     - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - mysql_data:/var/lib/mysql
-  #   networks:
-  #     - ragnet
+  mysql:
+    image: mysql:9.3
+    container_name: democracy-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-democracy}
+      - MYSQL_USER=${MYSQL_USER:-user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ragnet
 
-  # backend:
-  #   build:
-  #     context: ./backend
-  #   container_name: democracy-backend
-  #   user: "clistenes"
-  #   volumes:
-  #     - ./backend:/app # Eliminar cuando haya terminado de desarrollar
-  #     - ./data:/data
-  #   environment:
-  #     - MYSQL_URL=mysql+asyncmy://${MYSQL_USER:-user}:${MYSQL_PASSWORD:-password}@mysql:3306/${MYSQL_DATABASE:-democracy}
-  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-  #     - RABBITMQ_QUEUE=democracy
-  #     - UPLOAD_DIR=/data/uploads
-  #     - FRONTEND_HOST=http://localhost
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - rabbitmq
-  #     - qdrant
-  #     - mysql
-  #   networks:
-  #     - ragnet
+  backend:
+    build:
+      context: ./backend
+    container_name: democracy-backend
+    user: "clistenes"
+    volumes:
+      - ./backend:/app # Eliminar cuando haya terminado de desarrollar
+      - ./data:/data
+    environment:
+      - MYSQL_URL=mysql+asyncmy://${MYSQL_USER:-user}:${MYSQL_PASSWORD:-password}@mysql:3306/${MYSQL_DATABASE:-democracy}
+      - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
+      - RABBITMQ_QUEUE=democracy
+      - UPLOAD_DIR=/data/uploads
+      - FRONTEND_HOST=http://localhost
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - qdrant
+      - mysql
+    networks:
+      - ragnet
 
   worker:
     build: ./worker
     container_name: democracy-worker
-    user: "clistenes"
     volumes:
       - ./data:/data
     depends_on:
@@ -143,12 +142,13 @@ services:
       qdrant:
         condition: service_started
     environment:
-      - RABBITMQ_URL=${RABBITMQ_URL}
+      - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
       - RABBITMQ_QUEUE=democracy
       - QDRANT_URL=http://qdrant:6333/
       - EMBEDDING_MODEL=all-MiniLM-L6-v2
       - UPLOAD_DIR=/data/uploads
       - NVIDIA_VISIBLE_DEVICES=all
+      - PYTHONUNBUFFERED=1
     networks:
       - ragnet
     deploy:

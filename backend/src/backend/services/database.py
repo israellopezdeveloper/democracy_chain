@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from fastapi import HTTPException
+from sqlalchemy import update
 from sqlalchemy.sql.functions import count
 from sqlmodel import select
 from starlette.status import HTTP_404_NOT_FOUND
@@ -9,16 +10,22 @@ from backend.core.db import get_async_session
 from backend.models.uploadedfile import UploadedFile
 
 
-async def add(wallet_address: str, filename: str, mime_type: str) -> None:
-    new_record = UploadedFile(
-        filename=filename,
-        wallet_address=wallet_address,
-        created_at=datetime.now(UTC),
-        mime_type=mime_type,
-    )
-
+async def add(file: UploadedFile, overwrite: bool = False) -> None:
     async with get_async_session() as session:
-        session.add(new_record)
+        if not overwrite:
+            session.add(file)
+        else:
+            await session.execute(
+                update(UploadedFile)
+                .where(
+                    UploadedFile.filename == file.filename,
+                    UploadedFile.wallet_address == file.wallet_address,
+                )
+                .values(
+                    mime_type=file.mime_type,
+                    created_at=datetime.now(UTC),
+                )
+            )
         await session.commit()
 
 

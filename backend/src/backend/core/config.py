@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Democracy Backend"
 
     MYSQL_URL: str
-    RABBITMQ_URL: str = "amqp://guest:guest@rabbitmq:5672/"
+    RABBITMQ_URL: str = "amqp://guest:guest@rabbitmq:5672/democracy"
     RABBITMQ_QUEUE: str = "democracy"
     UPLOAD_DIR: str = "/data/uploads"
     FRONTEND_HOST: str = "http://localhost"

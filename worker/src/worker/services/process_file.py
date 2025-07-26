@@ -64,28 +64,3 @@ async def process_file(payload: str):
 
     qdrant.upload_points(collection_name=collection, points=points)
     print(f"[+] Ingested {len(points)} chunks from {filename}")
-
-
-def delete_file_vectors(wallet: str, filename: str):
-    scroll_result, _ = qdrant.scroll(
-        collection_name="program_chunks",
-        scroll_filter={
-            "must": [
-                {"key": "wallet_address", "match": {"value": wallet}},
-                {"key": "filename", "match": {"value": filename}},
-            ]
-        },
-        with_payload=False,
-        with_vectors=False,
-        limit=10000,
-    )
-
-    point_ids = [point.id for point in scroll_result]
-    if point_ids:
-        qdrant.delete(
-            collection_name="program_chunks",
-            points_selector={"points": point_ids},
-        )
-        print(f"[🗑️] Deleted {len(point_ids)} points for {filename}")
-    else:
-        print(f"[ℹ️] No points found for {filename}")
