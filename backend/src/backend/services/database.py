@@ -72,12 +72,6 @@ async def remove_all(wallet_address: str) -> list[UploadedFile]:
         )
         result = await session.execute(stmt)
         files = result.all()
-        num_files: int = len(files)
-        if num_files < 1:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail="No files found to delete",
-            )
         for (file,) in files:
             await session.delete(file)
         await session.commit()
@@ -95,12 +89,6 @@ async def remove(wallet_address: str, fileid: str) -> list[UploadedFile]:
 
         result = await session.execute(stmt)
         files = result.all()
-        num_files: int = len(files)
-        if num_files < 1:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail="No files found to delete",
-            )
         for (file,) in files:
             await session.delete(file)
         await session.commit()
@@ -116,12 +104,6 @@ async def remove_program(wallet_address: str) -> list[UploadedFile]:
 
         result = await session.execute(stmt)
         files = result.all()
-        num_files: int = len(files)
-        if num_files < 1:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail="No files found to delete",
-            )
         for (file,) in files:
             await session.delete(file)
         await session.commit()
@@ -136,16 +118,9 @@ async def remove_wallet(wallet_address: str) -> dict[str, str | int]:
         )
         result = await session.execute(stmt)
         files = result.all()
-        num_files: int = len(files)
-        if num_files < 1:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail="Wallet not found",
-            )
         for (file,) in files:
             await session.delete(file)
         await session.commit()
         return {
             "wallet_address": wallet_address,
-            "file_count": num_files,
         }

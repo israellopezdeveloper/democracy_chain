@@ -3,7 +3,15 @@ import os
 import uuid
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import (
+    Distance,
+    FieldCondition,
+    Filter,
+    MatchValue,
+    PointIdsList,
+    PointStruct,
+    VectorParams,
+)
 from sentence_transformers import SentenceTransformer
 
 from worker.core.config import EMBEDDING_MODEL, QDRANT_URL, UPLOAD_DIR
@@ -66,25 +74,38 @@ async def process_file(payload: str):
     print(f"[+] Ingested {len(points)} chunks from {filename}")
 
 
-def delete_file_vectors(wallet: str, filename: str):
+def delete_file_vectors(payload: str):
+    print("delete_file_vectors 1", payload)
+    data = json.loads(payload)
+    print("delete_file_vectors 2", json)
+
+    wallet = data["wallet_address"]
+    filename = data["filename"]
     scroll_result, _ = qdrant.scroll(
         collection_name="program_chunks",
-        scroll_filter={
-            "must": [
-                {"key": "wallet_address", "match": {"value": wallet}},
-                {"key": "filename", "match": {"value": filename}},
+        scroll_filter=Filter(
+            must=[
+                FieldCondition(
+                    key="wallet_address",
+                    match=MatchValue(value=wallet),
+                ),
+                FieldCondition(
+                    key="filename",
+                    match=MatchValue(value=filename),
+                ),
             ]
-        },
+        ),
         with_payload=False,
         with_vectors=False,
         limit=10000,
     )
+    print("delete_file_vectors 3")
 
     point_ids = [point.id for point in scroll_result]
     if point_ids:
         qdrant.delete(
             collection_name="program_chunks",
-            points_selector={"points": point_ids},
+            points_selector=PointIdsList(points=point_ids),
         )
         print(f"[🗑️] Deleted {len(point_ids)} points for {filename}")
     else:

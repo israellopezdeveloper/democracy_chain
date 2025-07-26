@@ -17,7 +17,16 @@ async def upload_file(
 ) -> PlainTextResponse:
     file_uploaded: UploadedFile = storage.upload(file, wallet_address)
     await database.add(file_uploaded)
-    await send_message({"file": file_uploaded.to_dict()})
+    await send_message(
+        {
+            "add": [
+                {
+                    "file": file_uploaded.to_dict(),
+                },
+            ],
+            "remove": [],
+        },
+    )
 
     return PlainTextResponse(
         content=file_uploaded.filename,
@@ -108,19 +117,25 @@ async def delete_files(
                 + storage.delete_all(wallet_address)
             )
         )
+        content: list[dict] = [file.to_dict() for file in files]
+        await send_message(
+            {
+                "add": [],
+                "remove": content,
+            },
+        )
+        return JSONResponse(
+            status_code=HTTP_200_OK,
+            content={
+                "deleted_count": len(files),
+                "deleted_filenames": content,
+            },
+        )
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="No files found to delete",
         ) from e
-
-    return JSONResponse(
-        status_code=HTTP_200_OK,
-        content={
-            "deleted_count": len(files),
-            "deleted_filenames": [file.to_dict() for file in files],
-        },
-    )
 
 
 @router.delete("/{wallet_address}/file/{fileid}", response_class=JSONResponse)
@@ -140,16 +155,22 @@ async def delete_file(
                 + storage.delete(fileid, wallet_address)
             )
         )
+        content: list[dict] = [file.to_dict() for file in files]
+        await send_message(
+            {
+                "add": [],
+                "remove": content,
+            },
+        )
+        return JSONResponse(
+            status_code=HTTP_200_OK,
+            content={
+                "deleted_count": len(files),
+                "deleted_filenames": content,
+            },
+        )
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="File not found",
         ) from e
-
-    return JSONResponse(
-        status_code=HTTP_200_OK,
-        content={
-            "deleted_count": len(files),
-            "deleted_filenames": [file.to_dict() for file in files],
-        },
-    )

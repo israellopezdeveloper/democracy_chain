@@ -2,7 +2,9 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_200_OK
 
+from backend.models.uploadedfile import UploadedFile
 from backend.services import database, storage
+from backend.services.rabbitmq import send_message
 
 router = APIRouter(tags=["wallet"])
 
@@ -20,15 +22,24 @@ async def delete_wallet(wallet_address: str) -> JSONResponse:
         await database.remove_wallet(wallet_address)
     except Exception:
         pass
-    files = []
+    files: list[UploadedFile] = []
     try:
         files = storage.delete_all(wallet_address)
     except Exception:
         pass
+
+    content: list[dict] = [file.to_dict() for file in files]
+    await send_message(
+        {
+            "add": [],
+            "remove": content,
+        },
+    )
     return JSONResponse(
         status_code=HTTP_200_OK,
         content={
+            "deleted_count": len(files),
             "message": f"Cartera '{wallet_address}' eliminada",
-            "deleted_files": [file.to_dict() for file in files],
+            "deleted_filenames": content,
         },
     )

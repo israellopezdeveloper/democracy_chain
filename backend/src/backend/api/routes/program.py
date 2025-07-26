@@ -25,7 +25,16 @@ async def program(
             file, wallet_address, overwrite
         )
         await database.add(uploaded_file, overwrite=overwrite)
-        await send_message({"file": uploaded_file.to_dict()})
+        await send_message(
+            {
+                "add": [
+                    {
+                        "file": uploaded_file.to_dict(),
+                    },
+                ],
+                "remove": [],
+            },
+        )
         return PlainTextResponse(
             content=uploaded_file.filename,
             status_code=HTTP_201_CREATED,
@@ -50,13 +59,24 @@ async def read_program(wallet_address: str):
 #  Delete
 @router.delete("/{wallet_address}/program", response_class=JSONResponse)
 async def delete_program(wallet_address: str) -> JSONResponse:
-    files = list(
-        set(
-            await database.remove_program(wallet_address)
-            + storage.delete_main(wallet_address)
+    files = []
+    try:
+        files = list(
+            set(
+                await database.remove_program(wallet_address)
+                + storage.delete_main(wallet_address)
+            )
         )
+    except Exception as e:
+        print("================>", e)
+    content: list[dict] = [file.to_dict() for file in files]
+    await send_message(
+        {
+            "add": [],
+            "remove": content,
+        },
     )
     return JSONResponse(
         status_code=HTTP_200_OK,
-        content=[file.to_dict() for file in files],
+        content=content,
     )
