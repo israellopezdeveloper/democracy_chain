@@ -1,0 +1,6 @@
+loopback_users.guest = false
+default_user = __USERNAME__
+default_pass = __PASSWORD__
+default_vhost = democracy
+load_definitions = /etc/rabbitmq/definitions.json
+

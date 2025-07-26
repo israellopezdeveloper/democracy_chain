@@ -77,9 +77,10 @@ services:
       args:
         RABBITMQ_USER: ${RABBITMQ_USER:-rabbituser}
         RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-securepassword123}
-        RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/democracy}
     container_name: democracy-rabbitmq
     restart: unless-stopped
+    environment:
+      - RABBITMQ_LOAD_DEFINITIONS=/etc/rabbitmq/definitions.json
     ports:
       - "5672:5672"
       - "15672:15672"

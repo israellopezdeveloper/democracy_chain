@@ -3,6 +3,7 @@ import asyncio
 import aio_pika
 from aio_pika.abc import AbstractIncomingMessage
 
+# from worker.services.processor import process_file
 from worker.core.config import RABBITMQ_QUEUE, RABBITMQ_URL
 
 
@@ -20,6 +21,9 @@ async def wait_for_rabbitmq(url, retries=10, delay=3):
 async def on_message(message: AbstractIncomingMessage):
     async with message.process():
         print(f"[📨] Mensaje recibido: {message.body.decode()}")
+        # payload = message.body.decode()
+        # print(f" [x] Received {payload}")
+        # await process_file(payload)
 
 
 async def main():
@@ -33,31 +37,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
-# import asyncio
-#
-# import aio_pika
-# from aio_pika.abc import AbstractIncomingMessage
-#
-# from worker.services.processor import process_file
-#
-#
-# async def on_message(message: AbstractIncomingMessage):
-#     async with message.process():
-#         payload = message.body.decode()
-#         print(f" [x] Received {payload}")
-#         await process_file(payload)
-#
-#
-# async def main():
-#     connection = await aio_pika.connect_robust()
-#     channel = await connection.channel()
-#     queue = await channel.declare_queue("rag_ingest", durable=True)
-#     await queue.consume(on_message)
-#     print(" [*] Waiting for messages. To exit press CTRL+C")
-#     await asyncio.Future()
-#
-#
-# if __name__ == "__main__":
-#     asyncio.run(main())

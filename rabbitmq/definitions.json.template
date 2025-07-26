@@ -1,0 +1,23 @@
+{
+  "users": [
+    {
+      "name": "__USERNAME__",
+      "password_hash": "__PASSWORD_HASH__",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    { "name": "democracy" }
+  ],
+  "permissions": [
+    {
+      "user": "__USERNAME__",
+      "vhost": "democracy",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ]
+}
+
