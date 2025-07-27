@@ -5,6 +5,7 @@ import { ResizableImage } from '../components/ResizableImage'
 import '../assets/TiptapEditor.css'
 import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
+import Image from '@tiptap/extension-image'
 import {
   FaListUl,
   FaListOl,
@@ -144,6 +145,7 @@ export default function TiptapEditor() {
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Image,
       ResizableImage,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -368,7 +370,7 @@ export default function TiptapEditor() {
 
               const src = await res.text();
 
-              editor.chain().focus().setImage({
+              (editor.chain() as any).focus().setResizableImage({
                 src,
                 'data-fileid': fileid,
               }).run();
@@ -440,7 +442,7 @@ export default function TiptapEditor() {
 
                     const src = await res.text();
 
-                    editor.chain().focus().setImage({
+                    (editor.chain() as any).focus().setImage({
                       src,
                       'data-fileid': file.filename,
                     }).run();

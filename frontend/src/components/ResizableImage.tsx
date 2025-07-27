@@ -39,6 +39,13 @@ const ResizableImageComponent: React.FC<NodeViewRendererProps> = (props) => {
   )
 }
 
+type ResizableImageAttrs = {
+  src: string
+  width?: string
+  height?: string
+  'data-fileid'?: string
+}
+
 export const ResizableImage = Node.create({
   name: 'resizableImageWrapper',
 
@@ -76,17 +83,18 @@ export const ResizableImage = Node.create({
     return ReactNodeViewRenderer(ResizableImageComponent)
   },
 
-  addCommands(): any {
+
+  addCommands() {
     return {
-      setImage:
-        (options: Record<string, any>) =>
+      setResizableImage:
+        (options: ResizableImageAttrs) =>
           ({ commands }: any) => {
             return commands.insertContent({
               type: 'resizableImageWrapper',
               attrs: options,
             })
           },
-    }
-  },
+    } as Partial<Record<string, any>>
+  }
 })
 

@@ -25,5 +25,5 @@ USER clistenes
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Ejecutar Vite en modo desarrollo como único proceso
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["./run_server.sh"]
 

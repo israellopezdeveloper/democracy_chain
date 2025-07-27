@@ -25,7 +25,7 @@ services:
     stdin_open: true
     tty: true
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${ENVIRONMENT:-production}
       - BLOCKCHAIN_URL=${BLOCKCHAIN_URL:-http://hardhat-node:8545}
     user: "clistenes"
     depends_on:
@@ -45,8 +45,9 @@ services:
     container_name: democracy-frontend
     ports:
       - "80:5173"
+      - "8080:4173"
     environment:
-      - NODE_ENV=development # production
+      - NODE_ENV=${ENVIRONMENT:-development}
       - VITE_BACKEND_URL=${BACKEND_URL:-http://localhost:8000/api/v1}
       - VITE_CONTRACT_API_URL=${CONTRACT_API_URL:-http://localhost:3000}
     user: "clistenes"
