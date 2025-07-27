@@ -31,6 +31,6 @@ RUN chmod +x /wait-for-it.sh
 USER clistenes
 
 EXPOSE 8000
-ENTRYPOINT ["/wait-for-it.sh", "mysql:3306", "--"]
+ENTRYPOINT ["/wait-for-it.sh", "${MYSQL_HOST:-mysql}:${MYSQL_PORT:-3306}", "--"]
 CMD ["uvicorn", "src.backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
 

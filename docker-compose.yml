@@ -103,8 +103,6 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE:-democracy}
       - MYSQL_USER=${MYSQL_USER:-user}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -119,6 +117,8 @@ services:
       - ./backend:/app # Eliminar cuando haya terminado de desarrollar
       - ./data:/data
     environment:
+      - MYSQL_HOST=${MYSQL_HOST:-mysql}
+      - MYSQL_PORT=${MYSQL_PORT:-3306}
       - MYSQL_URL=${MYSQL_URL:-mysql+asyncmy://user:password@mysql:3306/democracy}
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
       - RABBITMQ_QUEUE=democracy
