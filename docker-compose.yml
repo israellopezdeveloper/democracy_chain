@@ -117,7 +117,7 @@ services:
       - ./backend:/app # Eliminar cuando haya terminado de desarrollar
       - ./data:/data
     environment:
-      - MYSQL_URL=mysql+asyncmy://${MYSQL_USER:-user}:${MYSQL_PASSWORD:-password}@mysql:3306/${MYSQL_DATABASE:-democracy}
+      - MYSQL_URL=${MYSQL_URL:-mysql+asyncmy://user:password@mysql:3306/democracy}
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
       - RABBITMQ_QUEUE=democracy
       - UPLOAD_DIR=/data/uploads
