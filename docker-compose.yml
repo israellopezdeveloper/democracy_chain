@@ -47,9 +47,8 @@ services:
       - "80:5173"
     environment:
       - NODE_ENV=development # production
-      - VITE_HARDHAT_URL=http://hardhat-node:8545
-      - VITE_BACKEND_URL=http://localhost:8000/api/v1
-      - VITE_CONTRACT_API_URL=http://localhost:3000
+      - VITE_BACKEND_URL=${BACKEND_URL:-http://localhost:8000/api/v1}
+      - VITE_CONTRACT_API_URL=${CONTRACT_API_URL:-http://localhost:3000}
     user: "clistenes"
     depends_on:
       - hardhat-node
@@ -118,7 +117,7 @@ services:
       - MYSQL_PORT=${MYSQL_PORT:-3306}
       - MYSQL_URL=${MYSQL_URL:-mysql+asyncmy://user:password@mysql:3306/democracy}
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
-      - RABBITMQ_QUEUE=democracy
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-democracy}
       - UPLOAD_DIR=/data/uploads
       - FRONTEND_HOST=${FRONTEND_HOST:-http://localhost}
     ports:
