@@ -167,7 +167,7 @@ async function main() {
   if (networkName === "localhost" || networkName === "hardhat") {
     const [localSigner] = await hardhat.ethers.getSigners();
     signer = localSigner;
-    rpcUrl = process.env.HARDHAT_URL || "http://127.0.0.1:8545";
+    rpcUrl = process.env.BLOCKCHAIN_URL || "http://127.0.0.1:8545";
     const net = await hardhat.ethers.provider.getNetwork();
     chainId = net.chainId;
   } else {

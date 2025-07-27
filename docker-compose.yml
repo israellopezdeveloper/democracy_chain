@@ -26,7 +26,7 @@ services:
     tty: true
     environment:
       - NODE_ENV=production
-      - HARDHAT_URL=http://hardhat-node:8545
+      - BLOCKCHAIN_URL=${BLOCKCHAIN_URL:-http://hardhat-node:8545}
     user: "clistenes"
     depends_on:
       - hardhat-node
