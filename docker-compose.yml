@@ -54,6 +54,10 @@ services:
     depends_on:
       - hardhat-node
       - deployer-interactor
+      - qdrant
+      - worker
+      - backend
+      - rabbitmq
     networks:
       - democracy
     volumes: # Eliminar cuando haya terminado de desarrollar
@@ -121,7 +125,7 @@ services:
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
       - RABBITMQ_QUEUE=democracy
       - UPLOAD_DIR=/data/uploads
-      - FRONTEND_HOST=http://localhost
+      - FRONTEND_HOST=${FRONTEND_HOST:-http://localhost}
     ports:
       - "8000:8000"
     depends_on:
@@ -143,8 +147,8 @@ services:
         condition: service_started
     environment:
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
-      - RABBITMQ_QUEUE=democracy
-      - QDRANT_URL=http://qdrant:6333/
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-democracy}
+      - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
       - EMBEDDING_MODEL=all-MiniLM-L6-v2
       - UPLOAD_DIR=/data/uploads
       - NVIDIA_VISIBLE_DEVICES=all
