@@ -7,6 +7,12 @@ Este proyecto nace con una doble motivación:
 - **Practicar tecnologías Web3 y sistemas RAG (Retrieval-Augmented Generation)**.
 - **Contribuir a una democracia más real y participativa**, facilitando el acceso transparente a las propuestas de los candidatos.
 
+Mediante esta aplicación, cualquier ciudadano puede convertirse en candidato, lo cual es deseable para la participación democrática. Sin embargo, esto puede generar **una gran cantidad de candidatos**, haciendo muy difícil para un votante elegir entre ellos de forma informada.
+
+La solución es crear un **buscador inteligente**, donde el votante pueda describir en lenguaje natural qué tipo de propuestas o valores busca en un candidato, y recibir como resultado los **10 candidatos cuyos programas electorales sean más afines** a su consulta.
+
+Esto fomentará el voto informado y reducirá la “infoxicación” política.
+
 ---
 
 ## 📁 Estructura del proyecto
@@ -150,6 +156,10 @@ Cuando un archivo es eliminado:
 - [ ] Evaluación de sentimiento y resumen de programas
 - [ ] Registro de hashes en el contrato inteligente
 - [ ] Interfaz pública para votantes en la DApp
+
+[TODO](./TODO.es.md)
+
+[ROADMAP](./ROADMAP.es.md)
 
 ---
 

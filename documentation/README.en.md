@@ -1,11 +1,17 @@
 # 🗳️ Democracy Chain
 
-**Democracy Chain** is a platform designed to facilitate the understanding of electoral programs through automatic document analysis. It helps voters discover which candidates best align with their ideas using natural language processing, embeddings, blockchain, and a vector database. It also includes a Web3-based DApp that interacts with smart contracts on Ethereum.
+**Democracy Chain** is a platform aimed at facilitating the understanding of electoral programs through automatic document analysis. It allows voters to discover which candidates best align with their ideas using natural language processing, embeddings, blockchain, and a vector database. It also includes a Web3-based DApp for interacting with smart contracts on Ethereum.
 
-This project is driven by two key motivations:
+This project is driven by two main motivations:
 
 - **To practice with Web3 technologies and RAG (Retrieval-Augmented Generation) systems**.
-- **To contribute to a more authentic and participatory democracy**, by making candidate proposals more accessible and verifiable.
+- **To contribute to a more real and participatory democracy**, by providing transparent access to candidate proposals.
+
+Through this application, any citizen can become a candidate, which is desirable for democratic participation. However, this can lead to **a large number of candidates**, making it very difficult for voters to make an informed choice.
+
+The solution is to create an **intelligent search engine**, where voters can describe in natural language what kind of proposals or values they are looking for in a candidate, and receive as a result the **10 candidates whose electoral programs most closely match** their query.
+
+This will promote informed voting and reduce political "infobesity".
 
 ---
 
@@ -150,6 +156,10 @@ When a file is deleted:
 - [ ] Sentiment analysis and summarization of programs
 - [ ] On-chain hash registration
 - [ ] Public voter-facing interface in the DApp
+
+[TODO](./TODO.en.md)
+
+[ROADMAP](./ROADMAP.en.md)
 
 ---
 

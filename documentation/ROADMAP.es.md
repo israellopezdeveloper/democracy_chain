@@ -1,7 +1,4 @@
----
-title: ROADMAP
-author: Israel Lopez
----
+# 📍 ROADMAP — Sistema RAG de Democracy Chain
 
 ## 🧠 Objetivo final del RAG
 
