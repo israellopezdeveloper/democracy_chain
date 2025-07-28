@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useDemocracyContract, Citizen, Candidate } from '../hooks/useDemocracyContract'
 import { usePublicClient, useAccount } from "wagmi";
 import { toast } from 'react-toastify';
@@ -17,6 +17,7 @@ export default function CitizenPage() {
   const [hasProgram, setHasProgram] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const publicClient = usePublicClient();
+  const retryRef = useRef<NodeJS.Timeout | null>(null);
 
 
   const handleAddCitizen = async () => {
@@ -46,6 +47,10 @@ export default function CitizenPage() {
   };
 
   const loadCitizen = useCallback(async () => {
+    if (retryRef.current) {
+      clearTimeout(retryRef.current);
+    }
+
     if (!contract || !publicClient) return
 
     try {
@@ -58,16 +63,31 @@ export default function CitizenPage() {
         setIsDisabled(true)
         setIsDisabledAll(false);
         // @ts-expect-error "Dynamic ABI import"
-        const candidate: Candidate = new Candidate(await contract.read.getCandidate([citizen.person.dni]))
-        setIsCandidate(candidate.citizen.person.wallet === citizen.person.wallet)
-        setNewCandidate(candidate.citizen.person.wallet === citizen.person.wallet)
-        const res = await fetch(`${BACKEND_URL}/${candidate.citizen.person.wallet}/program`)
-        setHasProgram(res.ok);
+        const address = await contract.read.walletToDni([citizen.person.wallet]);
+        const coso = await contract.read.candidates([address]);
+        const candidate: Candidate = new Candidate(coso);
+        const candidateCreated = candidate.citizen.person.wallet === citizen.person.wallet;
+        if (candidateCreated) {
+          setIsCandidate(candidateCreated);
+          setNewCandidate(candidateCreated);
+          const res = await fetch(`${BACKEND_URL}/${candidate.citizen.person.wallet}/program`)
+          setHasProgram(res.ok);
+        } else {
+          if (newCandidate) {
+            retryRef.current = setTimeout(() => {
+              loadCitizen();
+            }, 1000);
+          }
+        }
+      } else {
+        retryRef.current = setTimeout(() => {
+          loadCitizen();
+        }, 1000);
       }
     } catch (e) {
       console.log("No existe", e)
     }
-  }, [contract])
+  }, [contract, publicClient, BACKEND_URL, newCandidate])
 
 
 
@@ -93,7 +113,6 @@ export default function CitizenPage() {
                 decoded.eventName === expectedEvent &&
                 decoded.args?.wallet?.toLowerCase() === connectedAddress.toLowerCase()
               ) {
-                console.log(`✅ ${expectedEvent} filtrado para ${connectedAddress}`);
                 toast.success(
                   expectedEvent === 'CitizenRegistered'
                     ? '🧑‍💼 Ciudadano registrado con éxito'

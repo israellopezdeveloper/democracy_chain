@@ -6,28 +6,38 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 draw_bottom() {
-  local width=$(tput cols)
-  if [[ "$width" -eq 0 ]]; then
+  local width=0
+  width=$(tput cols 2>/dev/null)
+  width=${width:-0}
+  if [ "$width" -le 0 ]; then
     width=60
   fi
   width=$((width - 2))
   local bottom_left='╰'
   local bottom_right='╯'
   local horizontal='─'
-  local horizontal_line=$(printf "%${width}s" | tr ' ' "$horizontal")
+  local horizontal_line=""
+  for (( i=0; i<${width}; i++ )); do
+    horizontal_line="${horizontal_line}─"
+  done
   echo -e "\n${bottom_left}${horizontal_line}${bottom_right}"
 }
 
 draw_top() {
-  local width=$(tput cols)
-  if [[ "$width" -eq 0 ]]; then
+  local width=0
+  width=$(tput cols 2>/dev/null)
+  width=${width:-0}
+  if [ "$width" -le 0 ]; then
     width=60
   fi
   width=$((width - 2))
   local top_left='╭'
   local top_right='╮'
   local horizontal='─'
-  local horizontal_line=$(printf "%${width}s" | tr ' ' "$horizontal")
+  local horizontal_line=""
+  for (( i=0; i<${width}; i++ )); do
+    horizontal_line="${horizontal_line}─"
+  done
   echo -e "\n${top_left}${horizontal_line}${top_right}"
 }
 
@@ -90,7 +100,12 @@ draw_bottom
 draw_top
 echo -e "${GREEN}Deploying contract...${NC}"
 
-npx hardhat ignition deploy "$MODULE_PATH" --network "$NETWORK" --reset --verify | tee deploy.log
+VERIFY_FLAG=""
+if [[ "$NETWORK" != "localhost" && "$NETWORK" != "hardhat" ]]; then
+  VERIFY_FLAG="--verify"
+fi
+
+npx hardhat ignition deploy "$MODULE_PATH" --network "$NETWORK" --reset $VERIFY_FLAG | tee deploy.log
 
 ADDRESS=$(grep -Eo '0x[a-fA-F0-9]{40}' deploy.log | tail -1)
 rm deploy.log

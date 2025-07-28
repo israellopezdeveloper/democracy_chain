@@ -35,6 +35,9 @@ async function interactWithContract(contractName, contract) {
 
   while (true) {
     let width = process.stdout.columns - 2;
+    if (width < 0) {
+      width = 58;
+    }
     let horizontal = "─".repeat(width);
     console.log(`\n╭${horizontal}╮`);
     const choices = [
@@ -118,6 +121,9 @@ async function interactWithContract(contractName, contract) {
       console.error("❌ Error executing function:\n", error);
     }
     width = process.stdout.columns - 2;
+    if (width < 0) {
+      width = 58;
+    }
     horizontal = "─".repeat(width);
     console.log(`╰${horizontal}╯\n`);
   }

@@ -52,12 +52,10 @@ services:
       - VITE_CONTRACT_API_URL=${CONTRACT_API_URL:-http://localhost:3000}
     user: "clistenes"
     depends_on:
-      - hardhat-node
-      - deployer-interactor
-      - qdrant
-      - worker
-      - backend
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
     networks:
       - democracy
     volumes: # Eliminar cuando haya terminado de desarrollar
@@ -150,6 +148,11 @@ services:
       - PYTHONUNBUFFERED=1
     networks:
       - ragnet
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f src/worker/main.py || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     deploy:
       resources:
         reservations:
