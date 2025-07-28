@@ -4,6 +4,7 @@ import { Modal } from "../components/Modal";
 import { useLocation } from 'react-router-dom';
 import { decodeEventLog } from 'viem';
 import { usePublicClient } from 'wagmi';
+import ChatBox from "../components/ChatBox";
 
 
 interface CandidateItem {
@@ -130,7 +131,7 @@ export default function CandidatesPage() {
 
   return (
     <>
-      <main>
+      <main className={"page-layout"}>
         <div>
           <img src="/freedom.svg" alt="Freedom" />
           <div>
@@ -194,6 +195,9 @@ export default function CandidatesPage() {
             </div>
           </div>
         </div>
+        <aside className="chat-container">
+          <ChatBox />
+        </aside>
       </main>
       {showErrorCandidateModal && (
         <Modal

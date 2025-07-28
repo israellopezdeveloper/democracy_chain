@@ -301,9 +301,9 @@ div.modal input {
   font-weight: bold; /* Opcional: para que resalte */
 }
 
-.form-row input[type="text"] {
+input[type="text"] {
   font-family: inherit;
-  flex-grow: 1; /* Permite que el input ocupe el espacio restante */
+  flex-grow: 1; /* Permite que el input ocupe el espacio restante de Debate */
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 25px;
@@ -311,8 +311,7 @@ div.modal input {
   color: #333; /* Color del texto del input */
 }
 
-.form-row input[type="text"]:focus {
-  border: 1px solid red;
+input[type="text"]:focus {
   border-radius: 0px;
   box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
   transition: all 0.5s ease-in-out;
@@ -394,3 +393,26 @@ div.viewer {
   background-color: #FFFFFFAA;
   color: #000000FF;
 }
+
+.page-layout {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex-direction: row;
+}
+
+.chat-container {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .page-layout {
+    flex-direction: column;
+  }
+
+  .chat-container {
+    margin-top: 20px;
+    margin-bottom: 50px;
+  }
+}
+
