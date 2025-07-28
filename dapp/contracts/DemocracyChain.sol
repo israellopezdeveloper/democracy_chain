@@ -94,13 +94,6 @@ contract DemocracyChain {
         _ADMIN = msg.sender;
     }
 
-    // modifier onlyAdmin() {
-    //   if (msg.sender != ADMIN) {
-    //     revert NotAdmin();
-    //   }
-    //   _;
-    // }
-
     modifier onlyRegistered() {
         bytes32 dniHash = walletToDni[msg.sender];
         if (!citizens[dniHash].registered) {
