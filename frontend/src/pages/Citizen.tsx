@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDemocracyContract, Citizen, Candidate } from '../hooks/useDemocracyContract'
 import { usePublicClient, useAccount } from "wagmi";
+import { toast } from 'react-toastify';
 import { decodeEventLog } from 'viem';
 
 export default function CitizenPage() {
@@ -39,9 +40,6 @@ export default function CitizenPage() {
           hash = await contract.write.addCandidate([]);
         }
       }
-      if (hash !== null) {
-        const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      }
     } catch (e) {
       console.log("Error:", e)
     }
@@ -62,7 +60,7 @@ export default function CitizenPage() {
         // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(await contract.read.getCandidate([citizen.person.dni]))
         setIsCandidate(candidate.citizen.person.wallet === citizen.person.wallet)
-        setNewCandidate(isCandidate)
+        setNewCandidate(candidate.citizen.person.wallet === citizen.person.wallet)
         const res = await fetch(`${BACKEND_URL}/${candidate.citizen.person.wallet}/program`)
         setHasProgram(res.ok);
       }
@@ -96,12 +94,21 @@ export default function CitizenPage() {
                 decoded.args?.wallet?.toLowerCase() === connectedAddress.toLowerCase()
               ) {
                 console.log(`✅ ${expectedEvent} filtrado para ${connectedAddress}`);
+                toast.success(
+                  expectedEvent === 'CitizenRegistered'
+                    ? '🧑‍💼 Ciudadano registrado con éxito'
+                    : '🎯 Candidato registrado con éxito',
+                  { position: "bottom-right" }
+                );
                 setTimeout(() => {
                   loadCitizen();
                 }, 3000);
               }
             } catch (err) {
               console.warn(`❌ No se pudo decodificar el log ${i}:`, err);
+              toast.error("❌ Error al registrar ciudadano", {
+                position: "bottom-right",
+              });
             }
           });
         };
