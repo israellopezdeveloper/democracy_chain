@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useDemocracyContract, Candidate, Citizen } from '../hooks/useDemocracyContract'
 import { Modal } from "../components/Modal";
 import { useLocation } from 'react-router-dom';
+import { decodeEventLog } from 'viem';
+import { usePublicClient } from 'wagmi';
+
 
 interface CandidateItem {
   dni: string;
@@ -14,6 +17,8 @@ export default function CandidatesPage() {
   const contract = useDemocracyContract()
   const [candidates, setCandidates] = useState<CandidateItem[]>([]);
   const [showErrorCandidateModal, setShowErrorCandidateModal] = useState(false);
+  const publicClient = usePublicClient();
+
 
   const fetchCandidates = useCallback(async () => {
     if (!contract) return
@@ -67,6 +72,61 @@ export default function CandidatesPage() {
     return () => clearInterval(interval);
   }, [contract, location]);
 
+  useEffect(() => {
+    if (!contract || !publicClient) return;
+
+    const setupWatchers = async () => {
+      const fromBlock = await publicClient.getBlockNumber();
+
+      const handleLogs = (expectedEvent: 'CandidateAdded' | 'VoteCast') =>
+        (logs: any[]) => {
+          logs.forEach((log, i) => {
+            try {
+              const decoded = decodeEventLog({
+                abi: contract.abi,
+                data: log.data,
+                topics: log.topics,
+              });
+
+              if (decoded.eventName === expectedEvent) {
+                console.log(`✅ Evento ${expectedEvent} recibido:`, decoded.args);
+                // Dejamos respirar la red antes de leer
+                setTimeout(() => {
+                  fetchCandidates();
+                }, 3000);
+              }
+            } catch (err) {
+              console.warn(`❌ No se pudo decodificar el log ${i}:`, err);
+            }
+          });
+        };
+
+      const unwatchCandidate = (publicClient as any).watchEvent({
+        address: contract.address,
+        fromBlock,
+        onLogs: handleLogs('CandidateAdded'),
+      });
+
+      const unwatchVote = (publicClient as any).watchEvent({
+        address: contract.address,
+        fromBlock,
+        onLogs: handleLogs('VoteCast'), // Solo si tu contrato lo emite
+      });
+
+      return () => {
+        unwatchCandidate();
+        unwatchVote();
+      };
+    };
+
+    const cleanupPromise = setupWatchers();
+
+    return () => {
+      cleanupPromise.then((cleanup) => {
+        cleanup?.();
+      });
+    };
+  }, [contract, publicClient, fetchCandidates]);
 
   return (
     <>

@@ -302,12 +302,20 @@ div.modal input {
 }
 
 .form-row input[type="text"] {
+  font-family: inherit;
   flex-grow: 1; /* Permite que el input ocupe el espacio restante */
   padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #4a4a4a; /* Color de fondo de los inputs similar al de la imagen */
-  color: white; /* Color del texto del input */
+  border-radius: 25px;
+  background-color: #FFFFFFAA; /* Color de fondo de los inputs similar al de la imagen */
+  color: #333; /* Color del texto del input */
+}
+
+.form-row input[type="text"]:focus {
+  border: 1px solid red;
+  border-radius: 0px;
+  box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
+  transition: all 0.5s ease-in-out;
 }
 
 /* Estilos para el botón */
@@ -327,6 +335,43 @@ div.modal input {
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
+}
+
+button.styled {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: transparent;
+  border: 2px solid #e74c3c;
+  border-radius: 50px;
+  color: #e74c3c;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-self: center;
+      -ms-flex-item-align: center;
+          align-self: center;
+  font-weight: 400;
+  line-height: 1;
+  margin: 5px;
+  padding: 1em 2em;
+  text-decoration: none;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-color: #3498db;
+  color: #fff;
+  box-shadow: 0 0 40px 40px #3498db inset, 0 0 0 0 #3498db;
+  -webkit-transition: all 150ms ease-in-out;
+  transition: all 150ms ease-in-out;
+}
+
+button.styled:hover {
+  box-shadow: 0 0 10px 0 #3498db inset, 0 0 10px 4px #3498db;
+  color: #3498db;
 }
 
 input:required {

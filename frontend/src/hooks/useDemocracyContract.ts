@@ -35,7 +35,7 @@ export function useDemocracyContract() {
         client,
       });
 
-      setContract(instance);
+      setContract({ ...instance, abi });
     };
 
     fetchContract();
