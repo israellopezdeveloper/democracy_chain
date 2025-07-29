@@ -13,7 +13,8 @@
 .chat-header {
   font-weight: bold;
   margin-bottom: 8px;
-  color: #333;
+  color: #6666FF;
+  user-select: none;
 }
 
 .chat-messages {
@@ -21,6 +22,8 @@
   overflow-y: auto;
   margin-bottom: 8px;
   padding-right: 4px;
+  border-radius: 10px;
+  box-shadow: inset 2px 2px 0.8em #6666FF;
 }
 
 .chat-message {

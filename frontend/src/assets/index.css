@@ -2,11 +2,9 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -18,6 +16,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -43,9 +42,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -53,18 +54,18 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+  color: #213547;
+  background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+  color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
   }
 }
 
-/* Parallax base styles */
+
 .parallax-container {
   position: fixed;
   width: 100%;
@@ -181,7 +182,7 @@ main > div.GrapesJsApp {
   height: 81.7vh;
 }
 
-/* Tabla principal */
+
 .table-container {
   background: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
@@ -200,7 +201,7 @@ main > div.GrapesJsApp {
 }
 
 .table thead {
-  background: #2563eb; /* azul intenso */
+  background: #2563eb;
   color: white;
 }
 
@@ -224,7 +225,7 @@ main > div.GrapesJsApp {
   font-size: 1rem;
 }
 
-/* Responsive scroll hint */
+
 .table-container::-webkit-scrollbar {
   height: 8px;
 }
@@ -270,67 +271,72 @@ div.modal input {
   min-height: 30px;
 }
 
-/* Estilos para el contenedor principal de tu formulario */
+
 .form-container {
-  /* Opcional: Centrar el formulario en la página */
+
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centra los divs de fila horizontalmente */
+  align-items: center;
   padding: 20px;
-  background-color: #e0e0d1; /* Color de fondo similar al de la imagen */
-  border: 1px solid #333; /* Borde oscuro similar al de la imagen */
-  width: fit-content; /* Ajusta el ancho al contenido */
-  margin: 50px auto; /* Centra el contenedor completo */
+  background-color: #e0e0d1;
+  border: 1px solid #333;
+  width: fit-content;
+  margin: 50px auto;
   border-radius: 20px;
 }
 
-/* Estilos para cada grupo de label e input */
+
 .form-row {
-  display: flex; /* Convierte cada fila en un contenedor flex */
-  align-items: center; /* Alinea los ítems verticalmente en el centro */
-  margin-bottom: 10px; /* Espacio entre filas */
-  width: 100%; /* Para que ocupen todo el ancho disponible en el contenedor padre */
-  justify-content: flex-end; /* Alinea los items al final (derecha) del row */
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+  justify-content: flex-end;
 }
 
 .form-row label {
-  flex-basis: 195px; /* Ancho fijo para el label, ajusta según necesites */
-  text-align: right; /* Alinea el texto del label a la derecha */
-  margin-right: 10px; /* Espacio entre el label y el input */
-  color: #6a5acd; /* Color azulado similar al de la imagen */
-  font-weight: bold; /* Opcional: para que resalte */
+  flex-basis: 195px;
+  text-align: right;
+  margin-right: 10px;
+  color: #6a5acd;
+  font-weight: bold;
 }
 
 input[type="text"] {
   font-family: inherit;
-  flex-grow: 1; /* Permite que el input ocupe el espacio restante de Debate */
+  flex-grow: 1;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #6666FF;
+  box-shadow: inset 2px 2px 0.3em #6666FF;
   border-radius: 25px;
-  background-color: #FFFFFFAA; /* Color de fondo de los inputs similar al de la imagen */
-  color: #333; /* Color del texto del input */
+  background-color: #FFFFFFAA;
+  color: #333;
 }
 
 input[type="text"]:focus {
   border-radius: 0px;
   box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
-  transition: all 0.5s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
-/* Estilos para el botón */
+input[type="text"]:focusout {
+  transition: all 0.2s ease-in-out;
+}
+
+
 .form-button-container {
-  margin-top: 20px; /* Espacio encima del botón */
+  margin-top: 20px;
   width: 100%;
   display: flex;
-  justify-content: center; /* Centra el botón horizontalmente */
+  justify-content: center;
 }
 
 .form-button-container button {
   padding: 10px 20px;
-  background-color: #333; /* Color de fondo del botón similar al de la imagen */
+  background-color: #333;
   color: white;
   border: none;
-  border-radius: 5px; /* Bordes redondeados similares a la imagen */
+  border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
@@ -339,8 +345,8 @@ input[type="text"]:focus {
 button.styled {
   box-sizing: border-box;
   -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   background-color: transparent;
   border: 2px solid #e74c3c;
   border-radius: 50px;
@@ -351,8 +357,8 @@ button.styled {
   display: -ms-flexbox;
   display: flex;
   -webkit-align-self: center;
-      -ms-flex-item-align: center;
-          align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
   font-weight: 400;
   line-height: 1;
   margin: 5px;
@@ -374,11 +380,11 @@ button.styled:hover {
 }
 
 input:required {
-  border-color: #007bff; /* Un borde azul para los campos obligatorios */
+  border-color: #007bff;
 }
 
-/* Puedes añadir un asterisco usando pseudoelementos */
-label:has(+ input:required)::after { /* :has() es relativamente nuevo, verifica compatibilidad */
+
+label:has(+ input:required)::after {
   content: " *";
   color: red;
   font-weight: bold;
@@ -412,7 +418,7 @@ div.viewer {
 
   .chat-container {
     margin-top: 20px;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
   }
 }
 
