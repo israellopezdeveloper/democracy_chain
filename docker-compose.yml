@@ -119,12 +119,15 @@ services:
       - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-democracy}
       - UPLOAD_DIR=/data/uploads
       - FRONTEND_HOST=${FRONTEND_HOST:-http://localhost}
+      - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
     ports:
       - "8000:8000"
     depends_on:
       - rabbitmq
       - qdrant
       - mysql
+      - llm
     networks:
       - ragnet
 
@@ -142,7 +145,7 @@ services:
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
       - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-democracy}
       - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
-      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
       - UPLOAD_DIR=/data/uploads
       - NVIDIA_VISIBLE_DEVICES=all
       - PYTHONUNBUFFERED=1
@@ -160,10 +163,47 @@ services:
             - capabilities: [gpu]
     runtime: nvidia
 
+  llm:
+    build:
+      context: ./llm
+    container_name: democracy-llm
+    restart: unless-stopped
+    runtime: nvidia
+    entrypoint: >
+      sh -c '
+        if [ "$${ENVIRONMENT}" = "development" ]; then
+          ollama serve & 
+          echo "Esperando a que Ollama esté disponible..." && 
+          until curl -s http://localhost:11434 > /dev/null; do sleep 2; done && 
+          echo "Descargando modelo $${LLM_MODEL:-llama2}..." && 
+          ollama pull $${LLM_MODEL:-llama2} && 
+          tail -f /dev/null;
+        else
+          echo "Entorno de producción - solo lanzando Ollama...";
+          exec ollama serve;
+        fi
+      '
+    ports: # TODO: eliminar
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama
+      - LLM_MODEL=${LLM_MODEL:-llama2}
+    networks:
+      - ragnet
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+        limits:
+          memory: 8g
 
 volumes:
   qdrant_data:
   mysql_data:
+  ollama_models:
 
 networks:
   democracy:
