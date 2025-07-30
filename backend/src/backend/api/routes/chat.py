@@ -6,9 +6,12 @@ from backend.services.qdrant import get_similar_chunks
 
 router = APIRouter()
 
+router = APIRouter(tags=["chat"])
+
 
 class ChatRequest(BaseModel):
     message: str
+    embedding: list[float]
 
 
 class ChatResponse(BaseModel):
@@ -19,7 +22,7 @@ class ChatResponse(BaseModel):
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        grouped_chunks = get_similar_chunks(request.message)
+        grouped_chunks = get_similar_chunks(request.embedding)
 
         reply, matched_wallets = query_llm(request.message, grouped_chunks)
 

@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar
 
 from pydantic import AnyUrl, BeforeValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     LLM_URL: str = "http://llm:11434/api"
     LLM_MODEL: str = "llama2"
     # 🔧 Configuración constante del modelo
-    LLM_SETTINGS = {
+    LLM_SETTINGS: ClassVar[dict] = {
         "model": LLM_MODEL,
         "system": (
             "Eres un analista electoral imparcial. "

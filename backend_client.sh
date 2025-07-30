@@ -1,6 +1,51 @@
 #!/bin/bash
 
 BASE_URL="http://localhost:8000/api/v1"
+
+upload_program_file() {
+  local file="$1"
+  local wallet="0x$(openssl rand -hex 20)"
+  echo "📤 Subiendo $file con wallet: $wallet"
+
+  RESPONSE=$(curl -s -X POST "$BASE_URL/${wallet}/program" \
+    -F "file=@${file}" \
+    -F "overwrite=false")
+
+  echo "✅ $file subido con wallet $wallet"
+  echo "$RESPONSE"
+  echo
+}
+
+batch_upload_from_folder() {
+  local folder="$1"
+
+  if [[ ! -d "$folder" ]]; then
+    echo "❌ La carpeta '$folder' no existe."
+    exit 1
+  fi
+
+  mapfile -t FILES < <(find "$folder" -maxdepth 1 -type f -name "*.txt")
+
+  if [[ ${#FILES[@]} -eq 0 ]]; then
+    echo "📭 No se encontraron archivos .txt en '$folder'"
+    exit 1
+  fi
+
+  echo "🚀 Subiendo ${#FILES[@]} archivos desde '$folder'..."
+
+  for file in "${FILES[@]}"; do
+    upload_program_file "$file"
+  done
+
+  echo "✅ Subida por lote completada."
+  exit 0
+}
+
+# 👉 Procesar parámetro --folder
+if [[ "$1" == "--folder" && -n "$2" ]]; then
+  batch_upload_from_folder "$2"
+fi
+
 WALLET="0x$(openssl rand -hex 20)"  # 40 caracteres, estilo Ethereum
 
 echo "🪪 Wallet generado: $WALLET"
