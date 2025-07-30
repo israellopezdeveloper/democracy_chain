@@ -20,7 +20,7 @@ async function main() {
   );
   const abiPath = path.resolve(
     __dirname,
-    "../dapp/artifacts/contracts/DemocracyChain.sol/DemocracyChain.json"
+    "../../dapp/artifacts/contracts/DemocracyChain.sol/DemocracyChain.json"
   );
   const artifact = JSON.parse(fs.readFileSync(abiPath, "utf8"));
   const abi = artifact.abi;

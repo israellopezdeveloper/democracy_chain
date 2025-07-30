@@ -1,7 +1,0 @@
-Partido Tecnócrata Moderno (PTM)
-
-- **Gobierno**: Ministros elegidos por mérito (ingenieros, científicos, economistas).
-- **Innovación**: 10% del PIB a I+D; ciudades modelo con gobierno algorítmico.
-- **Educación**: Eliminación de humanidades en secundaria; programación obligatoria.
-- **Salud**: Secuenciación genética gratuita para recién nacidos.
-- **Democracia**: Voto ponderado por cualificación técnica.

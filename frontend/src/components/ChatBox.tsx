@@ -70,7 +70,7 @@ export default function ChatBox() {
       </div>
 
       <div className="chat-input-container">
-        <input
+        <textarea
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}

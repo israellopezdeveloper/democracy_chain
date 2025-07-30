@@ -132,6 +132,9 @@ export default function CandidatesPage() {
   return (
     <>
       <main className={"page-layout"}>
+        <aside className="chat-container">
+          <ChatBox />
+        </aside>
         <div>
           <img src="/freedom.svg" alt="Freedom" />
           <div>
@@ -195,9 +198,6 @@ export default function CandidatesPage() {
             </div>
           </div>
         </div>
-        <aside className="chat-container">
-          <ChatBox />
-        </aside>
       </main>
       {showErrorCandidateModal && (
         <Modal

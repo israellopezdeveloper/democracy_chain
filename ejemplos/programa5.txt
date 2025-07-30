@@ -1,7 +1,0 @@
-Movimiento Ciudadano Digital (MCD)
-
-- **Gobierno**: Plataformas de democracia directa online.
-- **Transparencia**: Blockchain para contratos públicos.
-- **Datos**: Protección radical de privacidad (GDPR++).
-- **Ciberseguridad**: Creación de un "ejército hacker" estatal.
-- **Infraestructura**: Internet gratuito en espacios públicos.

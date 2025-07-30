@@ -1,19 +1,27 @@
 #!/bin/bash
 
-FOLDER="."
+# Ejecutar script Python para generar los programas HTML
+echo "⚙️ Generando archivos HTML desde programas.md..."
+python3 scripts/create_programs.py || {
+  echo "❌ Error generando los programas"
+  exit 1
+}
+
+FOLDER="./programs"
 RPC_URL="http://localhost:8545"
 CONTRACT="0x5fbdb2315678afecb367f032d93F642f64180aa3"
 FUNDER_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 BASE_URL="http://localhost:8000/api/v1"
 OUTPUT="wallets.csv"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "dni,name,wallet,private_key" > "$OUTPUT"
 
 i=1
-for file in "$FOLDER"/*.txt; do
+for file in "$FOLDER"/*.html; do
   [[ -f "$file" ]] || continue
 
-  NAME=$(basename "$file" .txt | tr '_' ' ')
+  NAME="name${i}"
   DNI="dni${i}"
 
   echo ""
@@ -22,7 +30,7 @@ for file in "$FOLDER"/*.txt; do
   echo "🪪 Generando wallet y registrando $NAME con DNI $DNI..."
 
   # Llamar al script JS y capturar JSON de salida
-  JSON=$(node register_candidate.js "$FUNDER_KEY" "$DNI" "$NAME")
+  JSON=$(node "$SCRIPT_DIR/register_candidate.js" "$FUNDER_KEY" "$DNI" "$NAME")
   ADDRESS=$(echo "$JSON" | jq -r .wallet)
   PRIVATE_KEY=$(echo "$JSON" | jq -r .private_key)
 
@@ -35,6 +43,7 @@ for file in "$FOLDER"/*.txt; do
 
   # Guardar en CSV
   echo "$DNI,$NAME,$ADDRESS,$PRIVATE_KEY" >> "$OUTPUT"
+  echo ""
   echo "╰──────────────────────────────────────────────────────────────────────────────╯"
 
   ((i++))

@@ -1,7 +1,0 @@
-Frente de los Trabajadores Esenciales (FTE)
-
-- **Laboral**: Salario mínimo = salario máximo de funcionarios.
-- **Reconocimiento**: Día nacional para cada profesión esencial.
-- **Beneficios**: Vivienda gratuita para sanitarios, basureros y agricultores.
-- **Automación**: Impuesto del 90% a robots que reemplacen humanos.
-- **Horarios**: Prohibición de trabajar después de las 18h.

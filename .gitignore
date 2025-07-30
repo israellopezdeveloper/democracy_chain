@@ -2,3 +2,6 @@ test_wallet.txt
 deployed-address.json
 data/
 __pycache__
+examples/programs/
+examples/programs/wallets.csv
+examples/programs/programas.md
