@@ -11,6 +11,7 @@ clean:
 	@docker volume rm democracy_chain_mysql_data democracy_chain_qdrant_data
 	@rm -rf data/uploads
 	@rm -rf examples/programs/*
+	@rm examples/wallets.csv
 
 run:
 	@$(BANNER) "🍻 Run application" "rainbow"
