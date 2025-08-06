@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import '../assets/chatbox.css';
-import { Candidate, useDemocracyContract } from '../hooks/useDemocracyContract';
+import { useDemocracyContract } from '../hooks/useDemocracyContract';
 
 export interface ChatResponse {
   reply: string;
@@ -32,6 +32,32 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
   const [loading, setLoading] = useState(false);
   const worker = useRef<Worker | null>(null);
 
+  // Cargar historial desde localStorage
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('chatMessages');
+    if (savedMessages) {
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch {
+        // ignorar
+      }
+    }
+    const savedInput = localStorage.getItem('chatInput');
+    if (savedInput) {
+      setInput(savedInput);
+    }
+  }, []);
+
+  // Guardar historial en localStorage
+  useEffect(() => {
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
+  }, [messages]);
+
+  // Guardar input no enviado
+  useEffect(() => {
+    localStorage.setItem('chatInput', input);
+  }, [input]);
+
   useEffect(() => {
     if (response && Array.isArray(response.matched_wallets)) {
       onMatchedWallets?.(response.matched_wallets);
@@ -52,7 +78,6 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
           setLoading(true);
           break;
         case 'loading':
-          // Opcional: setear una barra de progreso con e.data.loaded / e.data.total
           break;
         case 'complete':
           try {
@@ -60,24 +85,7 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
             const res = await queryChat(embedding);
             const botReply = `🤖 ${res.reply}`;
             setMessages((prev) => [...prev, botReply]);
-            // setResponse(res);
             if (res && Array.isArray(res.matched_wallets)) {
-              // let list = [];
-              // for (let i = 0; i < res.matched_wallets.length; i++) {
-              //   const wallet = res.matched_wallets[i];
-              //   console.log("PASA 2", wallet);
-              //   // @ts-expect-error "Dynamic ABI import"
-              //   const candidate: Candidate = new Candidate(await contract.read.candidates([wallet]));
-              //   console.log("PASA 3", candidate);
-              //   list.push({
-              //     dni: candidate.citizen.person.dni,
-              //     name: candidate.citizen.person.name,
-              //     wallet: candidate.citizen.person.wallet,
-              //     votes: candidate.voteCount,
-              //   })
-              // }
-              // console.log(list);
-              // onMatchedWallets?.(list);
               onMatchedWallets?.(res.matched_wallets);
             }
           } catch (err) {
