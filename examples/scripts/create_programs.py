@@ -32,6 +32,9 @@ def split_programs(input_file="programas.md", output_dir="programs"):
             )
 
     for program in programs_struct:
+        print(
+            "╭──────────────────────────────────────────────────────────────────────────────╮"
+        )
         filename_base = f"programa{program['num']}"
         filename_md = f"{filename_base}.md"
         filename_html = os.path.join(output_dir, f"{filename_base}.html")
@@ -44,7 +47,16 @@ def split_programs(input_file="programas.md", output_dir="programs"):
         # Convertir a HTML standalone con pandoc
         try:
             subprocess.run(
-                ["pandoc", filename_md, "-s", "-o", filename_html], check=True
+                [
+                    "pandoc",
+                    filename_md,
+                    "-s",
+                    "--metadata",
+                    f'title="{program["title"]}"',
+                    "-o",
+                    filename_html,
+                ],
+                check=True,
             )
             print(f"✅ HTML generado: {filename_html}")
         except subprocess.CalledProcessError as e:
@@ -57,6 +69,9 @@ def split_programs(input_file="programas.md", output_dir="programs"):
             print(f"🗑️ Eliminado archivo temporal: {filename_md}")
         except OSError as e:
             print(f"⚠️ No se pudo eliminar {filename_md}: {e}")
+        print(
+            "╰──────────────────────────────────────────────────────────────────────────────╯"
+        )
 
 
 if __name__ == "__main__":

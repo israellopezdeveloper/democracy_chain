@@ -47,15 +47,15 @@ contract DemocracyChain {
     }
 
     // Storage
-    /// @notice Mapping from hashed DNI to citizen information.
-    mapping(bytes32 => Citizen) public citizens; // hash_dni → citizen
-    /// @notice Mapping from hashed DNI to candidate information.
-    mapping(bytes32 => Candidate) public candidates; // hash_dni → candidate
+    /// @notice Mapping from address to citizen information.
+    mapping(address => Citizen) public citizens; // address → citizen
+    /// @notice Mapping from address to candidate information.
+    mapping(address => Candidate) public candidates; // address → candidate
     /// @notice Mapping from wallet address to hashed DNI.
-    mapping(address => bytes32) public walletToDni; // wallet → dni hash
+    mapping(bytes32 => address) public dniToWallet; // wallet → dni hash
 
     /// @notice List of hashed DNIs for all candidates.
-    bytes32[] public candidateList;
+    address[] public candidateList;
 
     /**
      * @notice Emitted when a citizen registers successfully.
@@ -95,23 +95,22 @@ contract DemocracyChain {
     }
 
     modifier onlyRegistered() {
-        bytes32 dniHash = walletToDni[msg.sender];
-        if (!citizens[dniHash].registered) {
+        if (!citizens[msg.sender].registered) {
             revert NotRegistered();
         }
         _;
     }
 
     modifier hasNotVoted() {
-        bytes32 dniHash = walletToDni[msg.sender];
-        if (citizens[dniHash].voted) {
+        if (citizens[msg.sender].voted) {
             revert AlreadyVoted();
         }
         _;
     }
 
     modifier onlyValidCandidate(bytes32 _dniHash) {
-        if (candidates[_dniHash].citizen.person.wallet == address(0)) {
+        address wallet = dniToWallet[_dniHash];
+        if (candidates[wallet].citizen.person.wallet == address(0)) {
             revert NotValidCandidate();
         }
         _;
@@ -140,19 +139,22 @@ contract DemocracyChain {
         string calldata _dni,
         string calldata _name
     ) external registrationOpen {
-        bytes32 dniHash = _dni.toHash();
-
-        if (citizens[dniHash].registered) {
+        if (citizens[msg.sender].registered) {
             revert CitizenAlreadyRegistered();
         }
 
-        citizens[dniHash] = Citizen({
+        bytes32 dniHash = _dni.toHash();
+
+        if (dniToWallet[dniHash] != address(0)) {
+            revert CitizenAlreadyRegistered();
+        }
+        citizens[msg.sender] = Citizen({
             person: Person({dni: _dni, name: _name, wallet: msg.sender}),
             registered: true,
             voted: false
         });
 
-        walletToDni[msg.sender] = dniHash;
+        dniToWallet[dniHash] = msg.sender;
 
         emit CitizenRegistered(msg.sender, _dni);
     }
@@ -162,7 +164,7 @@ contract DemocracyChain {
      * @return The Citizen struct containing personal and registration info.
      */
     function getCitizen() external view returns (Citizen memory) {
-        return citizens[walletToDni[msg.sender]];
+        return citizens[msg.sender];
     }
 
     /**
@@ -174,28 +176,30 @@ contract DemocracyChain {
         string calldata _dni,
         string calldata _name
     ) external registrationOpen {
-        bytes32 dniHash = _dni.toHash();
-
-        if (citizens[dniHash].registered) {
+        if (citizens[msg.sender].registered) {
             revert CitizenAlreadyRegistered();
         }
 
-        citizens[dniHash] = Citizen({
+        citizens[msg.sender] = Citizen({
             person: Person({dni: _dni, name: _name, wallet: msg.sender}),
             registered: true,
             voted: false
         });
 
-        walletToDni[msg.sender] = dniHash;
+        bytes32 dniHash = _dni.toHash();
+        if (dniToWallet[dniHash] != address(0)) {
+            revert CitizenAlreadyRegistered();
+        }
+        dniToWallet[dniHash] = msg.sender;
 
         emit CitizenRegistered(msg.sender, _dni);
 
-        candidates[dniHash] = Candidate({
-            citizen: citizens[dniHash],
+        candidates[msg.sender] = Candidate({
+            citizen: citizens[msg.sender],
             voteCount: 0
         });
 
-        candidateList.push(dniHash);
+        candidateList.push(msg.sender);
 
         emit CandidateAdded(msg.sender, _dni, _name);
     }
@@ -204,16 +208,14 @@ contract DemocracyChain {
      * @notice Converts the caller, if already registered, into a candidate.
      */
     function addCandidate() external onlyRegistered registrationOpen {
-        bytes32 dniHash = walletToDni[msg.sender];
-
-        if (candidates[dniHash].citizen.person.wallet != address(0)) {
+        if (candidates[msg.sender].citizen.person.wallet != address(0)) {
             revert CandidateAlreadyRegistered();
         }
-        Citizen memory citizen = citizens[dniHash];
+        Citizen memory citizen = citizens[msg.sender];
 
-        candidates[dniHash] = Candidate({citizen: citizen, voteCount: 0});
+        candidates[msg.sender] = Candidate({citizen: citizen, voteCount: 0});
 
-        candidateList.push(dniHash);
+        candidateList.push(msg.sender);
 
         emit CandidateAdded(
             msg.sender,
@@ -237,10 +239,9 @@ contract DemocracyChain {
     {
         bytes32 dniHash = _dni.toHash();
 
-        ++candidates[dniHash].voteCount;
+        ++candidates[dniToWallet[dniHash]].voteCount;
 
-        bytes32 voterDni = walletToDni[msg.sender];
-        citizens[voterDni].voted = true;
+        citizens[msg.sender].voted = true;
 
         emit Voted(msg.sender, _dni);
     }
@@ -254,7 +255,7 @@ contract DemocracyChain {
         string calldata _dni
     ) external view returns (Candidate memory) {
         bytes32 dniHash = _dni.toHash();
-        return candidates[dniHash];
+        return candidates[dniToWallet[dniHash]];
     }
 
     /**
@@ -273,7 +274,7 @@ contract DemocracyChain {
     function getCandidateByIndex(
         uint256 index
     ) external view returns (Candidate memory) {
-        bytes32 dniHash = candidateList[index];
-        return candidates[dniHash];
+        address addr = candidateList[index];
+        return candidates[addr];
     }
 }

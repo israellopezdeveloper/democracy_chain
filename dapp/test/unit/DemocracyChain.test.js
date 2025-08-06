@@ -83,7 +83,7 @@ describe("DemocracyChain", function () {
   it("should register a citizen as candidate directly", async function () {
     await expect(democracy.connect(user1).addCitizenCandidate(DNI1, NAME1))
       .to.emit(democracy, "CandidateAdded")
-      .withArgs(DNI1, NAME1, user1.address);
+      .withArgs(user1.address, DNI1, NAME1);
 
     const citizen = await democracy.connect(user1).getCitizen();
     expect(citizen.registered).to.be.true;
@@ -101,7 +101,7 @@ describe("DemocracyChain", function () {
 
     await expect(democracy.connect(user1).addCandidate())
       .to.emit(democracy, "CandidateAdded")
-      .withArgs(DNI1, NAME1, user1.address);
+      .withArgs(user1.address, DNI1, NAME1);
 
     const candidate = await democracy.getCandidate(DNI1);
     expect(candidate.voteCount).to.equal(0);
@@ -210,8 +210,8 @@ describe("DemocracyChain", function () {
   it("should store walletToDni mapping on registration", async function () {
     await democracy.connect(user1).registerCitizen(DNI1, NAME1);
     const dniHash = ethers.keccak256(ethers.toUtf8Bytes(DNI1));
-    const storedHash = await democracy.walletToDni(user1.address);
-    expect(storedHash).to.equal(dniHash);
+    const storedWallet = await democracy.dniToWallet(dniHash);
+    expect(storedWallet).to.equal(user1);
   });
 
   it("should allow a candidate to vote for themselves", async function () {

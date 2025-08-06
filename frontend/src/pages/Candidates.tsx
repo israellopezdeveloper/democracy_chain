@@ -6,7 +6,6 @@ import { decodeEventLog } from 'viem';
 import { usePublicClient } from 'wagmi';
 import ChatBox from "../components/ChatBox";
 
-
 interface CandidateItem {
   dni: string;
   name: string;
@@ -17,7 +16,8 @@ interface CandidateItem {
 export default function CandidatesPage() {
   const contract = useDemocracyContract()
   const [candidates, setCandidates] = useState<CandidateItem[]>([]);
-  const [showErrorCandidateModal, setShowErrorCandidateModal] = useState(false);
+  const [showErrorCandidateModal, setShowErrorCandidateModal] = useState("");
+  const [filterWallets, setFilterWallets] = useState<string[] | null>(null);
   const publicClient = usePublicClient();
 
 
@@ -38,6 +38,7 @@ export default function CandidatesPage() {
           votes: candidate.voteCount,
         })
       }
+      console.log("Candidatos leídos:", list);
       setCandidates(list);
     } catch (e) {
       console.error("Error loading candidates", e);
@@ -50,8 +51,12 @@ export default function CandidatesPage() {
     try {
       // @ts-expect-error "Dynamic ABI import"
       const citizen: Citizen = await contract.read.getCitizen([]);
+      if (!citizen.registered) {
+        setShowErrorCandidateModal("Primero te tienes que registrar"); // ✅ Mostrar modal
+        return;
+      }
       if (citizen.voted) {
-        setShowErrorCandidateModal(true); // ✅ Mostrar modal
+        setShowErrorCandidateModal("Solo puedes votar una vez por elección."); // ✅ Mostrar modal
         return;
       }
       // @ts-expect-error "Dynamic ABI import"
@@ -60,12 +65,12 @@ export default function CandidatesPage() {
       });
       setTimeout(async () => { await fetchCandidates(); }, 100000);
     } catch (e) {
-      console.error("Error al votar:", e);
-      setShowErrorCandidateModal(true); // ✅ Mostrar modal
+      setShowErrorCandidateModal(e as string); // ✅ Mostrar modal
     }
   };
 
   const location = useLocation();
+
   useEffect(() => {
     if (!contract) return;
     fetchCandidates();
@@ -128,12 +133,18 @@ export default function CandidatesPage() {
       });
     };
   }, [contract, publicClient, fetchCandidates]);
-
+  const filteredCandidates = (!filterWallets || filterWallets.length === 0)
+    ? candidates
+    : candidates.filter(c => filterWallets.includes(c.wallet));
   return (
     <>
       <main className={"page-layout"}>
         <aside className="chat-container">
-          <ChatBox />
+          <ChatBox onMatchedWallets={useCallback((wallets: string[]) => {
+            console.log("wallets ==>==>==>", wallets);
+            console.log("candidates ==>==>==>", candidates);
+            setFilterWallets(wallets);
+          }, [candidates])} />
         </aside>
         <div>
           <img src="/freedom.svg" alt="Freedom" />
@@ -141,6 +152,11 @@ export default function CandidatesPage() {
             <h1>Democracy Chain</h1>
             <h2>Candidatos</h2>
 
+            {filterWallets && (
+              <button onClick={() => setFilterWallets(null)}>
+                Mostrar todos los candidatos
+              </button>
+            )}
             <div className="table-container">
               {candidates.length === 0 ? (
                 <p>No hay candidatos aún.</p>
@@ -157,40 +173,38 @@ export default function CandidatesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {candidates.map((c) => (
-                        <tr key={c.dni}>
-                          <td>{c.dni}</td>
-                          <td>{c.name}</td>
-                          <td>{c.votes.toString()}</td>
-                          <td>
-                            <button
-                              onClick={() => handleVote(c.dni)}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: "1.5rem",
-                              }}
-                              title="Votar"
-                            >
-                              🗳️
-                            </button>
-                          </td>
-                          <td>
-                            <a
-                              href={`/viewer?wallet=${encodeURIComponent(c.wallet)}&name=${encodeURIComponent(c.name)}`}
-                              rel="noopener noreferrer"
-                              title="Ver programa"
-                              style={{
-                                fontSize: "1.2rem",
-                                textDecoration: "none",
-                              }}
-                            >
-                              📄
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredCandidates
+                        .map((c) => (
+                          <tr key={c.dni}>
+                            <td>{c.dni}</td>
+                            <td>{c.name}</td>
+                            <td>{c.votes.toString()}</td>
+                            <td>
+                              <button
+                                onClick={() => handleVote(c.dni)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: "1.5rem",
+                                }}
+                                title="Votar"
+                              >
+                                🗳️
+                              </button>
+                            </td>
+                            <td>
+                              <a
+                                href={`/viewer?wallet=${encodeURIComponent(c.wallet)}&name=${encodeURIComponent(c.name)}`}
+                                rel="noopener noreferrer"
+                                title="Ver programa"
+                                style={{ fontSize: "1.2rem", textDecoration: "none" }}
+                              >
+                                📄
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
@@ -199,11 +213,11 @@ export default function CandidatesPage() {
           </div>
         </div>
       </main>
-      {showErrorCandidateModal && (
+      {showErrorCandidateModal !== "" && (
         <Modal
-          title="🗳️ Ya has votado"
-          message="Solo puedes votar una vez por elección."
-          onClose={() => setShowErrorCandidateModal(false)}
+          title="🗳️ Error"
+          message={showErrorCandidateModal}
+          onClose={() => setShowErrorCandidateModal("")}
           autoCloseDelay={4000}
         />
       )}

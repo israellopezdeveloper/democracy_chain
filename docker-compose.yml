@@ -121,6 +121,8 @@ services:
       - FRONTEND_HOST=${FRONTEND_HOST:-http://localhost}
       - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - LLM_MODEL=${LLM_MODEL:-llama2}
+      - LLM_URL=${LLM_URL:-http://llm:11434/api/chat}
     ports:
       - "8000:8000"
     depends_on:
