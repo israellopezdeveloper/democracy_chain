@@ -1,13 +1,13 @@
 {
   "technologies": [
-    "solidity",
-    " web3",
-    " RAG",
-    " nextjs",
-    " reactjs",
-    " vue",
-    " wagmi",
-    " node"
+    "Solidity",
+    "Web3",
+    "RAG",
+    "Next.js",
+    "React.js",
+    "Vue",
+    "Wagmi",
+    "Node.js"
   ],
   "lang": {
     "en": {
