@@ -1,65 +1,150 @@
-BANNER=. ~/.local/lib/bash/utils.sh; banner
-SUBBANNER=. ~/.local/lib/bash/utils.sh; subbanner
-CLS=printf '\033c'
+SHELL      = /bin/bash
+BANNER     = . ~/.local/lib/bash/utils.sh && banner
+SUBBANNER  = . ~/.local/lib/bash/utils.sh && subbanner
+CLS        = printf '\033c'
+COMPOSE    = podman-compose
+PROJECT   ?= $(shell basename $(CURDIR))     # nombre de proyecto que usará el label de compose
+WAIT_TIMEOUT ?= 180
+
+# Espera a que todos los contenedores del proyecto estén healthy (si tienen healthcheck) o al menos "running".
+define wait_healthy
+	echo "⏳ Esperando hasta $(WAIT_TIMEOUT)s a que los servicios estén listos..."
+	end=$$(( $$(date +%s) + $(WAIT_TIMEOUT) )); \
+	while true; do \
+	  cids=$$(podman ps -q --filter label=io.podman.compose.project=$(PROJECT)); \
+	  if [ -z "$$cids" ]; then \
+	    sleep 2; \
+	    if [ $$(date +%s) -ge $$end ]; then echo "❌ Timeout sin contenedores"; exit 1; fi; \
+	    continue; \
+	  fi; \
+	  all_ok=1; \
+	  for id in $$cids; do \
+	    st=$$(podman inspect $$id --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}'); \
+	    case "$$st" in \
+	      healthy|running) ;; \
+	      starting|created|configured) all_ok=0 ;; \
+	      *) echo "⚠️  $$id -> $$st"; all_ok=0 ;; \
+	    esac; \
+	  done; \
+	  if [ $$all_ok -eq 1 ]; then echo "✅ Servicios listos"; break; fi; \
+	  if [ $$(date +%s) -ge $$end ]; then echo "❌ Timeout esperando health/running"; podman ps --filter label=io.podman.compose.project=$(PROJECT); exit 1; fi; \
+	  sleep 2; \
+	done
+endef
+
+.PHONY: clean run build programs hh-console backend-console create-zip up down logs wait-healthy
+
+wait-healthy:
+	@$(call wait_healthy) > /dev/null 2>&1 && \
+	printf "\033[0;32m   - Waiting pods to be ready\033[0m\n" || \
+	printf "\033[0;31m   - Waiting pods to be ready\033[0m\n"
+
+up:
+	@$(BANNER) "🚀 Up" "rainbow"
+	@$(COMPOSE) up -d >/dev/null 2>&1 && \
+	  $(call wait_healthy) >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Run & wait for running\033[0m\n" || \
+	  printf "\033[0;31m   - Run & wait for running\033[0m\n"
+	$(call wait_healthy) >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Run & wait for running\033[0m\n" || \
+	  printf "\033[0;31m   - Run & wait for running\033[0m\n"
+
+down:
+	@$(BANNER) "🛑 Down" "rainbow"
+	@$(COMPOSE) down --remove-orphans >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Stop & remove images\033[0m\n" || \
+	  printf "\033[0;31m   - Stop & remove images\033[0m\n"
+
+logs:
+	@$(COMPOSE) logs -f
 
 clean:
 	@$(BANNER) "🧽 Clean" "rainbow"
-	@docker compose up --detach && docker compose up --wait
-	@docker system prune --all --force
-	@docker volume prune --all --force
-	@docker compose stop && docker compose rm --force
-	@docker volume rm democracy_chain_mysql_data democracy_chain_qdrant_data
-	@rm -rf data/uploads
-	@rm -rf examples/programs/*
-	@rm examples/wallets.csv
+	-@$(COMPOSE) up -d >/dev/null 2>&1 && \
+	  $(call wait_healthy) >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Run & wait for running\033[0m\n" || \
+	  printf "\033[0;31m   - Run & wait for running\033[0m\n"
+	-@podman system prune --all --force >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Unused pods cleaned\033[0m\n" || \
+	  printf "\033[0;31m   - Unused pods cleaned\033[0m\n"
+	-@podman volume prune --force >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Unused volumes cleaned\033[0m\n" || \
+	  printf "\033[0;31m   - Unused volumes cleaned\033[0m\n"
+	-@$(COMPOSE) down --remove-orphans >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Stop & remove images\033[0m\n" || \
+	  printf "\033[0;31m   - Stop & remove images\033[0m\n"
+	-@podman volume rm democracy_chain_mysql_data democracy_chain_qdrant_data >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Remove volumes\033[0m\n" || \
+	  printf "\033[0;31m   - Remove volumes\033[0m\n"
+	-@rm -rf data/uploads examples/programs/* examples/wallets.csv && \
+	  printf "\033[0;32m   - Clean files\033[0m\n" || \
+	  printf "\033[0;31m   - Clean files\033[0m\n"
 
 run:
 	@$(BANNER) "🍻 Run application" "rainbow"
-	@docker compose up -d --wait
+	@$(COMPOSE) up -d >/dev/null 2>&1 && $(call wait_healthy) >/dev/null 2>&1 && \
+	  printf "\033[0;32m   - Run & wait for running\033[0m\n" || \
+	  printf "\033[0;31m   - Run & wait for running\033[0m\n"
 	@while true; do \
-		$(CLS); \
-		$(BANNER) "🍻 Run application" "rainbow"; \
-		services="$$(docker compose config --services)"; \
-		selection="$$(printf "$$services\nall\nexit\nrebuild\nrerun\nclean" | fzf --prompt="🔍 Selecciona un servicio para ver logs: ")"; \
-		if [ "$$selection" = "exit" ]; then \
-			$(SUBBANNER) "🛑 Finalizando servicios..."; \
-			docker compose down; \
-			break; \
-		elif [ "$$selection" = "all" ]; then \
-			$(SUBBANNER) "🟢 All logs."; \
-			docker compose logs -f; \
-		elif [ "$$selection" = "rebuild" ]; then \
-			$(SUBBANNER) "🟢 Rebuild."; \
-			make build clean; \
-			docker compose up -d --wait; \
-		elif [ "$$selection" = "clean" ]; then \
-			$(SUBBANNER) "🟢 Clean."; \
-			make clean; \
-			docker compose up -d --wait; \
-		elif [ "$$selection" = "rerun" ]; then \
-			$(SUBBANNER) "🟢 Rerun."; \
-			docker compose stop && docker compose rm --force; \
-			docker compose up -d --wait; \
-		elif echo "$$services" | grep -q -w "$$selection"; then \
-			$(SUBBANNER) "🟢 $$selection logs."; \
-			docker compose logs -f "$$selection"; \
-		else \
-			$(SUBBANNER) "❌ Selección inválida."; \
-		fi; \
+	  $(CLS); \
+	  $(BANNER) "🍻 Run application" "rainbow"; \
+	  services="$$( $(COMPOSE) config --services )"; \
+	  selection="$$(printf "0 - exit\n1 - all\n2 - rebuild\n3 - rerun\n4 - clean\n$$services" | fzf --prompt="🔍 Selecciona un servicio para ver logs: ")"; \
+	  if [ "$$selection" = "0 - exit" ]; then \
+	    $(SUBBANNER) "🛑 Finalizando servicios..."; \
+	    $(COMPOSE) down --remove-orphans > /dev/null 2>&1 && \
+	    printf "\033[0;32m   - Closing & removing orphans\033[0m\n" || \
+	    printf "\033[0;31m   - Closing & removing orphans\033[0m\n"; \
+	    break; \
+	  elif [ "$$selection" = "1 - all" ]; then \
+	    $(SUBBANNER) "🟢 All logs."; \
+	    $(COMPOSE) logs -f; \
+	  elif [ "$$selection" = "2 - rebuild" ]; then \
+	    $(SUBBANNER) "🟢 Rebuild."; \
+	    $(COMPOSE) build --no-cache && \
+	    printf "\033[0;32m   - Rebuild pods\033[0m\n" || \
+	    printf "\033[0;31m   - Rebuild pods\033[0m\n"; \
+	    $(COMPOSE) up -d > /dev/null 2>&1; \
+	    $(MAKE) wait_healthy && \
+	    printf "\033[0;32m   - Wait till ready\033[0m\n" || \
+	    printf "\033[0;31m   - Wait till ready\033[0m\n"; \
+	  elif [ "$$selection" = "3 - rerun" ]; then \
+	    $(SUBBANNER) "🟢 Rerun."; \
+	    $(COMPOSE) down --remove-orphans > /dev/null 2>&1 && \
+	    printf "\033[0;32m   - Shuting down pods & remove orphans\033[0m\n" || \
+	    printf "\033[0;31m   - Shuting down pods & remove orphans\033[0m\n"; \
+	    $(COMPOSE) up -d > /dev/null 2>&1 && \
+	    printf "\033[0;32m   - Running pods\033[0m\n" || \
+	    printf "\033[0;31m   - Running pods\033[0m\n"; \
+	    $(MAKE) wait_healthy; \
+	  elif [ "$$selection" = "4 - clean" ]; then \
+	    $(SUBBANNER) "🟢 Clean."; \
+	    $(MAKE) clean; \
+	    $(COMPOSE) up -d > /dev/null 2>&1 && \
+	    printf "\033[0;32m   - Running pods\033[0m\n" || \
+	    printf "\033[0;31m   - Running pods\033[0m\n"; \
+	    $(MAKE) wait_healthy; \
+	  elif echo "$$services" | grep -q -w "$$selection"; then \
+	    $(SUBBANNER) "🟢 $$selection logs."; \
+	    $(COMPOSE) logs -f "$$selection"; \
+	  else \
+	    $(SUBBANNER) "❌ Selección inválida."; \
+	  fi; \
 	done
 
 build:
 	@$(BANNER) "⚒️ Build application" "rainbow"
-	@docker compose build
+	@$(COMPOSE) build --no-cache && \
+	    printf "\033[0;32m   - Rebuild pods\033[0m\n" || \
+	    printf "\033[0;31m   - Rebuild pods\033[0m\n"
 
 programs:
 	@$(BANNER) "📰 Mock programs" "rainbow"
-	@cd examples && \
-		./scripts/register_programs.sh
+	@cd examples && ./scripts/register_programs.sh
 
 hh-console:
 	@$(BANNER) "  Hardhat console"
-	@docker attach democracy-deployer-interactor
+	@podman attach democracy-deployer-interactor
 
 backend-console:
 	@$(BANNER) "  Backend console"
@@ -67,10 +152,8 @@ backend-console:
 
 create-zip:
 	@$(BANNER) "  Create zip file"
-	@rm democracy_chain.zip
-	@zip  \
-	  -r democracy_chain.zip \
-	  . \
+	@rm -f democracy_chain.zip
+	@zip -r democracy_chain.zip . \
 	  -x ".git/*" \
 	  -x "*.bin" \
 	  -x "*/node_modules/*" \
@@ -101,5 +184,4 @@ create-zip:
 	  -x "*/*deployed-address*" \
 	  -x "*/*gas-report*" \
 	  -x ".*"
-
 
