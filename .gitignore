@@ -4,4 +4,5 @@ data/
 __pycache__
 examples/programs/
 examples/programs/wallets.csv
+examples/wallets.csv
 examples/programs/programas.md
