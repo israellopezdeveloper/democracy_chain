@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Modal } from "../components/Modal";
 
 export default function ViewerPage() {
   const [searchParams] = useSearchParams();
-  const wallet = searchParams.get('wallet');
-  const name = searchParams.get('name');
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const wallet = searchParams.get("wallet");
+  const name = searchParams.get("name");
+  const BACKEND_URL = import.meta.env["VITE_BACKEND_URL"];
 
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -19,50 +19,44 @@ export default function ViewerPage() {
         const res = await fetch(`${BACKEND_URL}/${wallet}/program`);
         if (!res.ok) throw new Error("Programa no encontrado");
         const text = await res.text();
-
         setContent(text);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Error desconocido al cargar el programa");
+        }
       }
     };
 
-    fetchProgram();
-  }, [wallet]);
+    void fetchProgram();
+  }, [wallet, BACKEND_URL]); // ✅ incluyo BACKEND_URL
 
   if (!wallet || error || !content) {
     return (
       <Modal
         title="📃 Error"
         message="No existe el programa"
-        onClose={() => { }}
+        onClose={() => {}}
         autoCloseDelay={4000}
-        redirectTo='/candidates'
+        redirectTo="/candidates"
       />
-    )
+    );
   }
 
-
-  return (<main>
-    <div>
-      <img
-        src="/freedom.svg"
-        alt="Freedom"
-      />
+  return (
+    <main>
       <div>
-        <h1>
-          Democracy Chain
-        </h1>
-
-        <h2>
-          📘 Programa Electoral de {name}
-        </h2>
-
-        <div
-          className={'viewer'}
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
+        <img src="/freedom.svg" alt="Freedom" />
+        <div>
+          <h1>Democracy Chain</h1>
+          <h2>📘 Programa Electoral de {name}</h2>
+          <div
+            className="viewer"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
       </div>
-    </div>
-  </main>)
+    </main>
+  );
 }
-

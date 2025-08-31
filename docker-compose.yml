@@ -126,13 +126,19 @@ services:
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
       - LLM_MODEL=${LLM_MODEL:-llama2}
       - LLM_URL=${LLM_URL:-http://llm:11434/api/chat}
+      - LLM_PROVIDER=ollama
+      - LLM_MODEL=${LLM_MODEL:-llama2}
     ports:
       - "8000:8000"
     depends_on:
-      - rabbitmq
-      - qdrant
-      - mysql
-      - llm
+      rabbitmq:
+        condition: service_started
+      qdrant:
+        condition: service_started
+      mysql:
+        condition: service_started
+      llm:
+        condition: service_healthy
     networks:
       - ragnet
 
@@ -207,6 +213,11 @@ services:
             - capabilities: [gpu]
         limits:
           memory: 8g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:11434/api/tags >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
     devices:     # <- CDI
       - "nvidia.com/gpu=all"
 

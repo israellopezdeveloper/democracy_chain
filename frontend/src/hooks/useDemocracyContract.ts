@@ -1,7 +1,9 @@
 import { usePublicClient, useWalletClient, useAccount } from "wagmi";
 import { getContract } from "viem";
 import { useEffect, useState } from "react";
-import type { Abi } from "viem";
+
+import type { Abi, Chain, PublicClient, Transport } from "viem";
+import type { DemocracyContract } from "../types/frontend.types";
 
 interface ContractInfo {
   abi: Abi;
@@ -9,8 +11,8 @@ interface ContractInfo {
   network: string;
 }
 
-export function useDemocracyContract() {
-  const publicClient = usePublicClient();
+export function useDemocracyContract(): DemocracyContract {
+  const publicClient = usePublicClient() as PublicClient<Transport, Chain>;
   const { data: walletClient } = useWalletClient();
   const [contract, setContract] = useState<ReturnType<
     typeof getContract
@@ -19,7 +21,7 @@ export function useDemocracyContract() {
   useEffect(() => {
     const fetchContract = async () => {
       const API_URL =
-        import.meta.env.VITE_CONTRACT_API_URL || "http://localhost:3000";
+        import.meta.env["VITE_CONTRACT_API_URL"] || "http://localhost:3000";
 
       const [abi, { address }]: [Abi, ContractInfo] = await Promise.all([
         fetch(`${API_URL}/abi`).then((res) => res.json()),

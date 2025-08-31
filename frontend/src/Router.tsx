@@ -23,7 +23,6 @@ export default function Router() {
           <Route path="/about" element={<AboutPage />} />
         </Route>
       </Routes>
-    </BrowserRouter >
+    </BrowserRouter>
   );
 }
-

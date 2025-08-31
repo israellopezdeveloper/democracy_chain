@@ -1,40 +1,25 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import '../assets/chatbox.css';
-import { useDemocracyContract } from '../hooks/useDemocracyContract';
-
-export interface ChatResponse {
-  reply: string;
-  matched_wallets: string[];
-}
-
-export async function queryChat(embedding: number[]): Promise<ChatResponse> {
-  const str = JSON.stringify({
-    message: "Coso",
-    embedding: Object.values(embedding),
-  });
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: str,
-  });
-  return res.json();
-}
+import { useEffect, useRef, useState, useCallback, type JSX } from "react";
+import "../assets/chatbox.css";
+import { useDemocracyContract } from "../hooks/useDemocracyContract";
+import { queryChat, type ChatResponse, type WorkerMessage } from "../api/chat";
 
 interface ChatBoxProps {
   onMatchedWallets?: (wallets: string[]) => void;
 }
 
-export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
+export default function ChatBox({
+  onMatchedWallets,
+}: ChatBoxProps): JSX.Element {
   const contract = useDemocracyContract();
   const [messages, setMessages] = useState<string[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [response, setResponse] = useState<ChatResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const worker = useRef<Worker | null>(null);
 
   // Cargar historial desde localStorage
   useEffect(() => {
-    const savedMessages = localStorage.getItem('chatMessages');
+    const savedMessages = localStorage.getItem("chatMessages");
     if (savedMessages) {
       try {
         setMessages(JSON.parse(savedMessages));
@@ -42,7 +27,7 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
         // ignorar
       }
     }
-    const savedInput = localStorage.getItem('chatInput');
+    const savedInput = localStorage.getItem("chatInput");
     if (savedInput) {
       setInput(savedInput);
     }
@@ -50,12 +35,12 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
 
   // Guardar historial en localStorage
   useEffect(() => {
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
   }, [messages]);
 
   // Guardar input no enviado
   useEffect(() => {
-    localStorage.setItem('chatInput', input);
+    localStorage.setItem("chatInput", input);
   }, [input]);
 
   useEffect(() => {
@@ -66,31 +51,37 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
 
   useEffect(() => {
     if (!worker.current) {
-      console.log("Cargando worker")
-      worker.current = new Worker(new URL('/embedding-worker.js', import.meta.url), {
-        type: 'module',
-      });
+      console.log("Cargando worker");
+      worker.current = new Worker(
+        new URL("../workers/embedding-worker.ts", import.meta.url),
+        {
+          type: "module",
+        },
+      );
     }
 
-    const onMessageReceived = async (e: MessageEvent<any>) => {
+    const onMessageReceived = async (e: MessageEvent<WorkerMessage>) => {
       switch (e.data.status) {
-        case 'initiate':
+        case "initiate":
           setLoading(true);
           break;
-        case 'loading':
+        case "loading":
           break;
-        case 'complete':
+        case "complete":
           try {
             const embedding = e.data.embedding;
-            const res = await queryChat(embedding);
-            const botReply = `🤖 ${res.reply}`;
+            const res: ChatResponse = await queryChat(embedding);
+            const botReply: string = `🤖 ${res.reply}`;
             setMessages((prev) => [...prev, botReply]);
             if (res && Array.isArray(res.matched_wallets)) {
               onMatchedWallets?.(res.matched_wallets);
             }
           } catch (err) {
             console.error(err);
-            setMessages((prev) => [...prev, '❌ Error al procesar la consulta.']);
+            setMessages((prev) => [
+              ...prev,
+              "❌ Error al procesar la consulta.",
+            ]);
             setResponse(null);
           } finally {
             setLoading(false);
@@ -99,18 +90,18 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
       }
     };
 
-    worker.current.addEventListener('message', onMessageReceived);
+    worker.current.addEventListener("message", onMessageReceived);
 
     return () => {
-      worker.current?.removeEventListener('message', onMessageReceived);
+      worker.current?.removeEventListener("message", onMessageReceived);
     };
-  }, [contract]);
+  }, [contract, onMatchedWallets]);
 
   const sendMessage = useCallback(() => {
     if (!input.trim() || !worker.current) return;
     const newMessages = [...messages, `🧑‍💬 ${input}`];
     setMessages(newMessages);
-    setInput('');
+    setInput("");
     worker.current.postMessage({ text: input });
   }, [input, messages]);
 
@@ -119,11 +110,20 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
       <div className="chat-header">🗣️ Chat de búsqueda</div>
 
       <div className="chat-messages">
-        {messages.map((m, i) => (
-          <div key={i} className="chat-message">{m}</div>
-        ))}
+        {messages.map((m, i) => {
+          const isBot = m.startsWith("🤖") || m.startsWith("❌");
+          return (
+            <div
+              key={i}
+              className={`chat-message ${isBot ? "bot" : "user"}`}
+            >
+              {m}
+            </div>
+          );
+        })}
 
-        {response && Array.isArray(response.matched_wallets) &&
+        {response &&
+          Array.isArray(response.matched_wallets) &&
           response.matched_wallets.length > 0 && (
             <div className="chat-message highlight">
               <strong>🎯 Programas destacados:</strong>
@@ -141,14 +141,13 @@ export default function ChatBox({ onMatchedWallets }: ChatBoxProps) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Escribe tu mensaje..."
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           disabled={loading}
         />
         <button onClick={sendMessage} className="styled" disabled={loading}>
-          {loading ? '⏳' : 'Enviar'}
+          {loading ? "⏳" : "Enviar"}
         </button>
       </div>
     </div>
   );
 }
-

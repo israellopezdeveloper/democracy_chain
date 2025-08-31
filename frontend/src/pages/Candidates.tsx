@@ -1,16 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
-import { useDemocracyContract, Candidate, Citizen } from '../hooks/useDemocracyContract'
+import {
+  useDemocracyContract,
+  Candidate,
+  Citizen,
+} from "../hooks/useDemocracyContract";
 import { Modal } from "../components/Modal";
-import { useLocation, Link } from 'react-router-dom';
-import { decodeEventLog } from 'viem';
-import { usePublicClient } from 'wagmi';
+import { useLocation, Link } from "react-router-dom";
+import { usePublicClient } from "wagmi";
 import ChatBox from "../components/ChatBox";
+import type { Address, Abi } from "viem";
 
 interface CandidateItem {
   dni: string;
   name: string;
   wallet: string;
-  votes: string; // Cambiado de bigint a string para serializar
+  votes: string; // bigint -> string para serializar
+}
+
+function toBigInt(v: unknown): bigint {
+  if (typeof v === "bigint") return v;
+  if (typeof v === "number") return BigInt(v);
+  if (typeof v === "string") return BigInt(v);
+  throw new TypeError("Expected bigint-compatible value");
 }
 
 export default function CandidatesPage() {
@@ -18,21 +29,25 @@ export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<CandidateItem[]>([]);
   const [showErrorCandidateModal, setShowErrorCandidateModal] = useState("");
   const [filterWallets, setFilterWallets] = useState<string[] | null>(null);
-  const publicClient = usePublicClient();
+
+  const publicClient = usePublicClient()!;
   const location = useLocation();
 
   // Cargar últimos candidatos desde localStorage
   useEffect(() => {
-    const savedCandidates = localStorage.getItem('lastCandidates');
+    const savedCandidates = localStorage.getItem("lastCandidates");
     if (savedCandidates) {
       try {
         const parsed = JSON.parse(savedCandidates);
         setCandidates(parsed);
       } catch (e) {
-        console.warn("No se pudieron cargar los candidatos desde localStorage.", e);
+        console.warn(
+          "No se pudieron cargar los candidatos desde localStorage.",
+          e,
+        );
       }
     }
-    const savedFilter = localStorage.getItem('filterWallets');
+    const savedFilter = localStorage.getItem("filterWallets");
     if (savedFilter) {
       setFilterWallets(JSON.parse(savedFilter));
     }
@@ -41,94 +56,122 @@ export default function CandidatesPage() {
   // Persistir filterWallets
   useEffect(() => {
     if (filterWallets && filterWallets.length > 0) {
-      localStorage.setItem('filterWallets', JSON.stringify(filterWallets));
+      localStorage.setItem("filterWallets", JSON.stringify(filterWallets));
     } else {
-      localStorage.removeItem('filterWallets');
+      localStorage.removeItem("filterWallets");
     }
   }, [filterWallets]);
 
   const fetchCandidates = useCallback(async () => {
-    if (!contract) return;
+    if (!contract || !publicClient) return;
     try {
-      // @ts-expect-error "Dynamic ABI import"
-      const count: bigint = await contract.read.getCandidateCount([]) as bigint;
+      const address = contract.address as Address;
+      const abi = contract.abi as Abi;
+
+      // getCandidateCount() -> bigint
+      const countUnknown = await publicClient.readContract({
+        address,
+        abi,
+        functionName: "getCandidateCount",
+        args: [],
+      });
+      const count = toBigInt(countUnknown);
+
       const list: CandidateItem[] = [];
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < Number(count); i++) {
+        // getCandidateByIndex(uint256) -> struct Candidate
+        const candUnknown = await publicClient.readContract({
+          address,
+          abi,
+          functionName: "getCandidateByIndex",
+          args: [BigInt(i)],
+        });
+        // Adaptador a tu clase Candidate
         // @ts-expect-error "Dynamic ABI import"
-        const candidate: Candidate = new Candidate(await contract.read.getCandidateByIndex([i]));
+        const candidate: Candidate = new Candidate(candUnknown);
+
         list.push({
           dni: candidate.citizen.person.dni,
           name: candidate.citizen.person.name,
           wallet: candidate.citizen.person.wallet,
-          votes: candidate.voteCount.toString(), // Convertir a string para localStorage
+          votes: candidate.voteCount.toString(),
         });
       }
       setCandidates(list);
-      localStorage.setItem('lastCandidates', JSON.stringify(list));
+      localStorage.setItem("lastCandidates", JSON.stringify(list));
     } catch (e) {
       console.error("Error loading candidates", e);
     }
-  }, [contract]);
+  }, [contract, publicClient]);
 
   useEffect(() => {
     if (!contract) return;
-    fetchCandidates();
+    void fetchCandidates();
     const interval = setInterval(fetchCandidates, 10000);
     return () => clearInterval(interval);
   }, [contract, location, fetchCandidates]);
 
   useEffect(() => {
     if (!contract || !publicClient) return;
+
     const setupWatchers = async () => {
       const fromBlock = await publicClient.getBlockNumber();
-      const handleLogs = (expectedEvent: 'CandidateAdded' | 'VoteCast') =>
-        (logs: any[]) => {
-          logs.forEach((log, i) => {
-            try {
-              const decoded = decodeEventLog({
-                abi: contract.abi,
-                data: log.data,
-                topics: log.topics,
-              });
-              if (decoded.eventName === expectedEvent) {
-                console.log(`✅ Evento ${expectedEvent} recibido:`, decoded.args);
-                setTimeout(fetchCandidates, 3000);
-              }
-            } catch (err) {
-              console.warn(`❌ No se pudo decodificar el log ${i}:`, err);
-            }
-          });
-        };
-      const unwatchCandidate = (publicClient as any).watchEvent({
-        address: contract.address,
+      const address = contract.address as Address;
+      const abi = contract.abi as Abi;
+
+      const unwatchCandidate = publicClient.watchContractEvent({
+        address,
+        abi,
+        eventName: "CandidateAdded",
         fromBlock,
-        onLogs: handleLogs('CandidateAdded'),
+        onLogs: () => {
+          setTimeout(fetchCandidates, 3000);
+        },
       });
-      const unwatchVote = (publicClient as any).watchEvent({
-        address: contract.address,
+
+      const unwatchVote = publicClient.watchContractEvent({
+        address,
+        abi,
+        eventName: "VoteCast",
         fromBlock,
-        onLogs: handleLogs('VoteCast'),
+        onLogs: () => {
+          setTimeout(fetchCandidates, 3000);
+        },
       });
+
       return () => {
         unwatchCandidate();
         unwatchVote();
       };
     };
+
     const cleanupPromise = setupWatchers();
     return () => {
-      cleanupPromise.then(c => c && c());
+      void cleanupPromise.then((c) => c && c());
     };
   }, [contract, publicClient, fetchCandidates]);
 
-  const filteredCandidates = !filterWallets || filterWallets.length === 0
-    ? candidates
-    : candidates.filter(c => filterWallets.includes(c.wallet));
+  const filteredCandidates =
+    !filterWallets || filterWallets.length === 0
+      ? candidates
+      : candidates.filter((c) => filterWallets.includes(c.wallet));
 
   const handleVote = async (wallet: string) => {
-    if (!contract) return;
+    if (!contract || !publicClient) return;
     try {
+      const address = contract.address as Address;
+      const abi = contract.abi as Abi;
+
+      // getCitizen() -> struct
+      const citizenUnknown = await publicClient.readContract({
+        address,
+        abi,
+        functionName: "getCitizen",
+        args: [],
+      });
       // @ts-expect-error "Dynamic ABI import"
-      const citizen: Citizen = await contract.read.getCitizen([]);
+      const citizen: Citizen = new Citizen(citizenUnknown);
+
       if (!citizen.registered) {
         setShowErrorCandidateModal("Primero te tienes que registrar");
         return;
@@ -137,11 +180,14 @@ export default function CandidatesPage() {
         setShowErrorCandidateModal("Solo puedes votar una vez por elección.");
         return;
       }
+
+      // Escritura: si tu hook NO expone write, migra a useWriteContract(); si sí lo expone, puedes dejarlo:
       // @ts-expect-error "Dynamic ABI import"
       await contract.write.vote({ args: [wallet] });
+
       setTimeout(fetchCandidates, 100000);
     } catch (e) {
-      setShowErrorCandidateModal(e as string);
+      setShowErrorCandidateModal(String(e));
     }
   };
 
@@ -178,17 +224,24 @@ export default function CandidatesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCandidates.map(c => (
+                  {filteredCandidates.map((c) => (
                     <tr key={c.wallet}>
                       <td>{c.dni}</td>
                       <td>{c.name}</td>
                       <td>{c.votes}</td>
                       <td>
                         <button
-                          onClick={() => handleVote(c.dni)}
-                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.5rem' }}
+                          onClick={() => handleVote(c.wallet)}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "1.5rem",
+                          }}
                           title="Votar"
-                        >🗳️</button>
+                        >
+                          🗳️
+                        </button>
                       </td>
                       <td>
                         <Link to={`/viewer?wallet=${encodeURIComponent(c.wallet)}`}>

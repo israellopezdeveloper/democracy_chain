@@ -18,18 +18,16 @@ export default function Navbar() {
       >
         {title}
       </Link>
-    )
-  }
+    );
+  };
 
   return (
     <>
       {/* Navbar fijo arriba */}
-      <nav className="navbar" >
+      <nav className="navbar">
         <ConnectButton />
 
-        <Link to="/">
-          Democracy Chain
-        </Link>
+        <Link to="/">Democracy Chain</Link>
 
         <button
           onClick={() => setOpen(!open)}
@@ -61,8 +59,8 @@ export default function Navbar() {
 
       {/* Overlay flotante del menú */}
       {open && (
-        <div className="menucontextual-bg" onClick={() => setOpen(false)} >
-          <div className="menucontextual" onClick={(e) => e.stopPropagation()} >
+        <div className="menucontextual-bg" onClick={() => setOpen(false)}>
+          <div className="menucontextual" onClick={(e) => e.stopPropagation()}>
             <NavbarItem title="Inicio" href="/" />
             <NavbarItem title="Ciudadano" href="/citizen" />
             <NavbarItem title="Candidatos" href="/candidates" />
@@ -73,4 +71,3 @@ export default function Navbar() {
     </>
   );
 }
-

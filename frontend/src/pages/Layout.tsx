@@ -1,7 +1,7 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { useParallax } from '../hooks/useParallax';
-import { Outlet } from 'react-router-dom';
+import { useParallax } from "../hooks/useParallax";
+import { Outlet } from "react-router-dom";
 
 export default function Layout() {
   useParallax();
@@ -14,10 +14,8 @@ export default function Layout() {
         <div className="parallax-layer back"></div>
         <div className="parallax-layer front"></div>
       </div>
-      <main className="relative z-10">
-      </main>
+      <main className="relative z-10"></main>
       <Outlet />
     </>
   );
 }
-
