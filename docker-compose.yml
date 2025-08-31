@@ -8,9 +8,11 @@ services:
       - "8545:8545"
     environment:
       - NODE_ENV=production
-    user: "clistenes"
+    user: "${UID}:${GID}"
     networks:
-      - democracy
+      democracy:
+        aliases:
+          - hardhat-node
     deploy:
       resources:
         limits:
@@ -27,7 +29,7 @@ services:
     environment:
       - NODE_ENV=${ENVIRONMENT:-production}
       - BLOCKCHAIN_URL=${BLOCKCHAIN_URL:-http://hardhat-node:8545}
-    user: "clistenes"
+    user: "${UID}:${GID}"
     depends_on:
       - hardhat-node
     networks:
@@ -41,7 +43,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend/
     container_name: democracy-frontend
     ports:
       - "80:5173"
@@ -50,7 +52,7 @@ services:
       - NODE_ENV=${ENVIRONMENT:-development}
       - VITE_BACKEND_URL=${BACKEND_URL:-http://localhost:8000/api/v1}
       - VITE_CONTRACT_API_URL=${CONTRACT_API_URL:-http://localhost:3000}
-    user: "clistenes"
+    user: "${UID}:${GID}"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -63,7 +65,7 @@ services:
       - /app/node_modules
 
   qdrant:
-    image: qdrant/qdrant:latest
+    image: docker.io/qdrant/qdrant:latest
     container_name: democracy-qdrant
     restart: unless-stopped
     networks:
@@ -81,6 +83,7 @@ services:
     restart: unless-stopped
     environment:
       - RABBITMQ_LOAD_DEFINITIONS=/etc/rabbitmq/definitions.json
+    user: "${UID}:${GID}"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 5s
@@ -90,7 +93,7 @@ services:
       - ragnet
 
   mysql:
-    image: mysql:9.3
+    image: docker.io/mysql:9.3
     container_name: democracy-mysql
     restart: unless-stopped
     environment:
@@ -107,7 +110,7 @@ services:
     build:
       context: ./backend
     container_name: democracy-backend
-    user: "clistenes"
+    user: "${UID}:${GID}"
     volumes:
       - ./backend:/app # Eliminar cuando haya terminado de desarrollar
       - ./data:/data
@@ -134,10 +137,12 @@ services:
       - ragnet
 
   worker:
-    build: ./worker
+    build:
+      context: ./worker
     container_name: democracy-worker
     volumes:
       - ./data:/data
+    user: "${UID}:${GID}"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -163,14 +168,14 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
-    runtime: nvidia
+    devices:     # <- CDI
+      - "nvidia.com/gpu=all"
 
   llm:
     build:
       context: ./llm
     container_name: democracy-llm
     restart: unless-stopped
-    runtime: nvidia
     entrypoint: >
       sh -c '
         if [ "$${ENVIRONMENT}" = "development" ]; then
@@ -192,6 +197,7 @@ services:
     environment:
       - OLLAMA_MODELS=/root/.ollama
       - LLM_MODEL=${LLM_MODEL:-llama2}
+    user: "${UID}:${GID}"
     networks:
       - ragnet
     deploy:
@@ -201,6 +207,8 @@ services:
             - capabilities: [gpu]
         limits:
           memory: 8g
+    devices:     # <- CDI
+      - "nvidia.com/gpu=all"
 
 volumes:
   qdrant_data:

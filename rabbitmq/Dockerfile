@@ -1,4 +1,4 @@
-FROM rabbitmq:3-management
+FROM docker.io/rabbitmq:3-management
 
 ARG RABBITMQ_USER
 ARG RABBITMQ_PASSWORD

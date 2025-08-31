@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
+FROM docker.io/pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
 
 # Evitar prompts durante instalaciones
 ENV DEBIAN_FRONTEND=noninteractive

@@ -133,7 +133,7 @@ run:
 	done
 
 build:
-	@$(BANNER) "⚒️ Build application" "rainbow"
+	@$(BANNER) "🔨 Build application" "rainbow"
 	@$(COMPOSE) build --no-cache && \
 	    printf "\033[0;32m   - Rebuild pods\033[0m\n" || \
 	    printf "\033[0;31m   - Rebuild pods\033[0m\n"

@@ -1,4 +1,4 @@
-FROM ollama/ollama:latest
+FROM docker.io/ollama/ollama:latest
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
