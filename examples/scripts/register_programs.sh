@@ -28,7 +28,7 @@ for file in "$FOLDER"/*.html; do
   echo "🪪 Generando wallet y registrando $NAME con DNI $DNI..."
 
   # Llamar al script JS y capturar JSON de salida
-  JSON=$(node "$SCRIPT_DIR/register_candidate.js" "$FUNDER_KEY" "$DNI" "$NAME")
+  JSON=$(node "$SCRIPT_DIR/register_candidate.mjs" "$FUNDER_KEY" "$DNI" "$NAME")
   ADDRESS=$(echo "$JSON" | jq -r .wallet)
   PRIVATE_KEY=$(echo "$JSON" | jq -r .private_key)
 
