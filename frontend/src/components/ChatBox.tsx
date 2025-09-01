@@ -21,52 +21,51 @@ export default function ChatBox({
   onMatchedWallets,
 }: ChatBoxProps): JSX.Element {
   const contract = useDemocracyContract();
-  const [messages, setMessages] = useState<string[]>([]);
-  const [input, setInput] = useState("");
+
+  // ✅ Hidrata desde localStorage en la inicialización (evita pisar datos)
+  const [messages, setMessages] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("chatMessages");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [input, setInput] = useState<string>(() => {
+    try {
+      return localStorage.getItem("chatInput") ?? "";
+    } catch {
+      return "";
+    }
+  });
+
   const [response, setResponse] = useState<ChatResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const worker = useRef<Worker | null>(null);
 
-  // Cargar historial desde localStorage
-  useEffect(() => {
-    const savedMessages = localStorage.getItem("chatMessages");
-    if (savedMessages) {
-      try {
-        setMessages(JSON.parse(savedMessages));
-      } catch {
-        // ignorar
-      }
-    }
-    const savedInput = localStorage.getItem("chatInput");
-    if (savedInput) {
-      setInput(savedInput);
-    }
-  }, []);
-
-  // Guardar historial en localStorage
+  // ✅ Persistencia: solo este effect (ya no hay “carga” tardía)
   useEffect(() => {
     localStorage.setItem("chatMessages", JSON.stringify(messages));
   }, [messages]);
 
-  // Guardar input no enviado
   useEffect(() => {
     localStorage.setItem("chatInput", input);
   }, [input]);
 
+  // Propaga wallets destacados hacia arriba
   useEffect(() => {
     if (response && Array.isArray(response.matched_wallets)) {
       onMatchedWallets?.(response.matched_wallets);
     }
   }, [response, onMatchedWallets]);
 
+  // ✅ Worker: crear/limpiar + handler estable
   useEffect(() => {
     if (!worker.current) {
-      console.log("Cargando worker");
       worker.current = new Worker(
         new URL("../workers/embedding-worker.ts", import.meta.url),
-        {
-          type: "module",
-        },
+        { type: "module" },
       );
     }
 
@@ -83,9 +82,12 @@ export default function ChatBox({
           try {
             const embedding = e.data.embedding;
             const res: ChatResponse = await queryChat(embedding);
-            const botReply: string = `🤖 ${res.reply}`;
+            const botReply = `🤖 ${res.reply}`;
+
+            // ✅ Actualización funcional (evita closures obsoletos)
             setMessages((prev) => [...prev, botReply]);
-            if (res && Array.isArray(res.matched_wallets)) {
+            setResponse(res);
+            if (Array.isArray(res.matched_wallets)) {
               onMatchedWallets?.(res.matched_wallets);
             }
           } catch (err) {
@@ -109,16 +111,28 @@ export default function ChatBox({
         "message",
         onMessageReceived,
       );
+      // opcional: terminar el worker para liberar memoria al cambiar de página
+      worker.current?.terminate();
+      worker.current = null;
     };
   }, [contract, onMatchedWallets]);
 
   const sendMessage = useCallback(() => {
-    if (!input.trim() || !worker.current) return;
-    const newMessages = [...messages, `🧑‍💬 ${input}`];
-    setMessages(newMessages);
+    const text = input.trim();
+    if (!text || !worker.current) return;
+
+    // ✅ Actualización funcional
+    setMessages((prev) => [...prev, `🧑‍💬 ${text}`]);
     setInput("");
-    worker.current.postMessage({ text: input });
-  }, [input, messages]);
+    worker.current.postMessage({ text });
+  }, [input]);
+
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setResponse(null);
+    localStorage.removeItem("chatMessages");
+    localStorage.removeItem("chatInput");
+  }, []);
 
   return (
     <div className="chat-box">
@@ -137,18 +151,16 @@ export default function ChatBox({
           );
         })}
 
-        {response &&
-          Array.isArray(response.matched_wallets) &&
-          response.matched_wallets.length > 0 && (
-            <div className="chat-message highlight">
-              <strong>🎯 Programas destacados:</strong>
-              <ul>
-                {response?.matched_wallets.map((w) => (
-                  <li key={w}>{w}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+        {response?.matched_wallets?.length ? (
+          <div className="chat-message highlight">
+            <strong>🎯 Programas destacados:</strong>
+            <ul>
+              {response.matched_wallets.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
 
       <div className="chat-input-container">
@@ -156,16 +168,26 @@ export default function ChatBox({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Escribe tu mensaje..."
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault(); // evita salto de línea accidental
+              sendMessage();
+            }
+          }}
           disabled={loading}
         />
-        <button
-          onClick={sendMessage}
-          className="styled"
-          disabled={loading}
-        >
-          {loading ? "⏳" : "Enviar"}
-        </button>
+        <div className="chat-buttons">
+          <button
+            onClick={sendMessage}
+            className="styled"
+            disabled={loading}
+          >
+            {loading ? "⏳" : "Enviar"}
+          </button>
+          <button onClick={clearChat} className="styled clear-btn">
+            🧹
+          </button>
+        </div>
       </div>
     </div>
   );
