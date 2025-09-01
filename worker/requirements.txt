@@ -1,6 +1,0 @@
-aio_pika
-qdrant-client
-sentence-transformers
-unstructured
-pdfminer.six
-python-docx

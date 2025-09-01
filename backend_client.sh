@@ -1,6 +1,51 @@
 #!/bin/bash
 
-BASE_URL="http://localhost:8000"
+BASE_URL="http://localhost:8000/api/v1"
+
+upload_program_file() {
+  local file="$1"
+  local wallet="0x$(openssl rand -hex 20)"
+  echo "📤 Subiendo $file con wallet: $wallet"
+
+  RESPONSE=$(curl -s -X POST "$BASE_URL/${wallet}/program" \
+    -F "file=@${file}" \
+    -F "overwrite=false")
+
+  echo "✅ $file subido con wallet $wallet"
+  echo "$RESPONSE"
+  echo
+}
+
+batch_upload_from_folder() {
+  local folder="$1"
+
+  if [[ ! -d "$folder" ]]; then
+    echo "❌ La carpeta '$folder' no existe."
+    exit 1
+  fi
+
+  mapfile -t FILES < <(find "$folder" -maxdepth 1 -type f -name "*.txt")
+
+  if [[ ${#FILES[@]} -eq 0 ]]; then
+    echo "📭 No se encontraron archivos .txt en '$folder'"
+    exit 1
+  fi
+
+  echo "🚀 Subiendo ${#FILES[@]} archivos desde '$folder'..."
+
+  for file in "${FILES[@]}"; do
+    upload_program_file "$file"
+  done
+
+  echo "✅ Subida por lote completada."
+  exit 0
+}
+
+# 👉 Procesar parámetro --folder
+if [[ "$1" == "--folder" && -n "$2" ]]; then
+  batch_upload_from_folder "$2"
+fi
+
 WALLET="0x$(openssl rand -hex 20)"  # 40 caracteres, estilo Ethereum
 
 echo "🪪 Wallet generado: $WALLET"
@@ -35,7 +80,8 @@ upload_program() {
     -F "file=@${FILEPATH}" \
     -F "overwrite=${OVERWRITE}")
 
-  echo "✅ Subido como: $RESPONSE"
+  echo "✅ Subido como:"
+  echo "$RESPONSE"
 }
 
 delete_program() {
@@ -62,7 +108,8 @@ upload_file() {
   FILEPATH="${REPLY}"
   RESPONSE=$(curl -s -X POST "$BASE_URL/${WALLET}/file" \
     -F "file=@${FILEPATH}")
-  echo "✅ Subido como: $RESPONSE"
+  echo "✅ Subido como:"
+  echo "$RESPONSE"
 }
 
 list_files() {
@@ -70,7 +117,7 @@ list_files() {
   if [[ "$RESPONSE" == "[]" ]]; then
     echo "📭 No hay archivos para $WALLET"
   else
-    echo "$RESPONSE" | jq 
+    echo "$RESPONSE"  | jq 
   fi
 }
 
@@ -87,7 +134,8 @@ delete_one() {
   select FILENAME in "${FILES[@]}"; do
     if [[ -n "$FILENAME" ]]; then
       RESPONSE=$(curl -s -X DELETE "$BASE_URL/${WALLET}/file/${FILENAME}")
-      echo "✅ $RESPONSE"
+      echo "✅"
+      echo "$RESPONSE" | jq
       return
     else
       echo "❌ Selección inválida."
@@ -99,7 +147,8 @@ delete_all() {
   read -rp "⚠️ ¿Eliminar TODOS los archivos de $WALLET? (y/n): " CONFIRM
   if [[ "$CONFIRM" == "y" ]]; then
     RESPONSE=$(curl -s -X DELETE "$BASE_URL/${WALLET}/file")
-    echo "✅ $RESPONSE"
+    echo "✅"
+    echo "$RESPONSE" | jq
   else
     echo "❎ Cancelado."
   fi
@@ -132,7 +181,7 @@ list_wallets() {
   if [[ "$RESPONSE" == "[]" ]]; then
     echo "📭 No hay carteras registradas aún."
   else
-    echo "$RESPONSE" | jq
+    echo "$RESPONSE"  | jq
   fi
 }
 
@@ -152,7 +201,8 @@ delete_wallet() {
       read -rp "⚠️ ¿Seguro que deseas eliminar la cartera $WALLET_TO_DELETE? (y/n): " CONFIRM
       if [[ "$CONFIRM" == "y" ]]; then
         RESPONSE=$(curl -s -X DELETE "$BASE_URL/$WALLET_TO_DELETE")
-        echo "✅ $RESPONSE"
+        echo "✅"
+        echo "$RESPONSE" | jq
       else
         echo "❎ Cancelado."
       fi

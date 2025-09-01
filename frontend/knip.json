@@ -1,0 +1,4 @@
+{
+  "ignore": ["src/workers/embedding-worker.ts"],
+  "ignoreDependencies": ["@xenova/transformers"]
+}

@@ -9,7 +9,13 @@ interface ModalProps {
   redirectTo?: string; // opcional, por defecto se queda donde esta
 }
 
-export function Modal({ title, message, onClose, autoCloseDelay = 0, redirectTo = "" }: ModalProps) {
+export function Modal({
+  title,
+  message,
+  onClose,
+  autoCloseDelay = 0,
+  redirectTo = "",
+}: ModalProps) {
   const navigate = useNavigate();
 
   const handleClose = useCallback(() => {
@@ -43,4 +49,3 @@ export function Modal({ title, message, onClose, autoCloseDelay = 0, redirectTo 
     </div>
   );
 }
-

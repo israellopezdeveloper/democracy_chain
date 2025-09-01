@@ -19,7 +19,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     localhost: {
-      url: process.env.HARDHAT_URL || "http://127.0.0.1:8545",
+      url: process.env.BLOCKCHAIN_URL || "http://127.0.0.1:8545",
       chainId: 31337,
     },
     sepolia: {

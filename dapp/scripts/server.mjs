@@ -16,7 +16,9 @@ app.get("/abi", (_, res) => {
   }
 
   try {
-    const abi = JSON.parse(fs.readFileSync(CONTRACT_PATH, "utf-8")).abi;
+    const abi = JSON.parse(
+      fs.readFileSync(CONTRACT_PATH, "utf-8")
+    ).abi;
     res.json(abi);
   } catch (err) {
     console.error("❌ Error reading ABI:", err);

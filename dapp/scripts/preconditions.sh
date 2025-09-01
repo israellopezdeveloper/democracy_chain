@@ -1,78 +1,60 @@
 #!/usr/bin/env bash
-
-# preconditions.sh
+set -euo pipefail
 
 ENV_FILE=".env"
 BLUE_COLOR="\033[0;34m"
 NC="\033[0m"
 
-# Timestamp actual en milisegundos
-NOW_MS=$(($(date +%s%N)/1000000))
+now_ms() { echo $(( $(date +%s) * 1000 )); }
+is_int()  { [[ "${1:-}" =~ ^[0-9]+$ ]]; }
 
-# Función para validar timestamp
-is_valid_timestamp() {
-  local val="$(($1 / 1000))"
-  [[ "$val" =~ ^[0-9]+$ ]] && [ "$val" -gt "$NOW_MS" ]
-}
+NOW_MS=$(now_ms)
 
-# Calcular nuevos valores
-NEW_REGISTRATION_DEADLINE=$((NOW_MS + 2 * 24 * 60 * 60 * 1000))
-NEW_VOTING_DEADLINE=$((NOW_MS + 4 * 24 * 60 * 60 * 1000))
+# Por defecto: +2 días y +4 días en milisegundos
+NEW_REGISTRATION_DEADLINE=$(( NOW_MS + 2*24*60*60*1000 ))
+NEW_VOTING_DEADLINE=$(( NOW_MS + 4*24*60*60*1000 ))
 
-# Variables para almacenar qué poner
-FINAL_REGISTRATION_DEADLINE=""
-FINAL_VOTING_DEADLINE=""
-
-# Inicializar si existe archivo
+# Carga previa (si existe)
 if [[ -f "$ENV_FILE" ]]; then
-  # Cargar las variables actuales
+  # shellcheck disable=SC1090
   source "$ENV_FILE"
 fi
 
-# Evaluar REGISTRATION_DEADLINE
-if is_valid_timestamp "$REGISTRATION_DEADLINE"; then
-  FINAL_REGISTRATION_DEADLINE="$REGISTRATION_DEADLINE"
-else
-  FINAL_REGISTRATION_DEADLINE="$NEW_REGISTRATION_DEADLINE"
-fi
-echo -e "📅 ${BLUE_COLOR}REGISTRATION_DEADLINE: $(date --date "@$((${FINAL_REGISTRATION_DEADLINE} / 1000))")${NC}"
+# Normaliza un timestamp esperado en ms: si no es int o es pasado, usa default
+normalize_ms() {
+  local val="${1:-}" default_ms="$2"
+  if is_int "$val"; then
+    # si vino en segundos por error (10 dígitos aprox), súbelo a ms
+    if (( ${#val} <= 10 )); then
+      val=$(( val * 1000 ))
+    fi
+    # futuro razonable
+    if (( val > NOW_MS )); then
+      echo "$val"
+      return 0
+    fi
+  fi
+  echo "$default_ms"
+}
 
-# Evaluar VOTING_DEADLINE
-if is_valid_timestamp "$VOTING_DEADLINE"; then
-  FINAL_VOTING_DEADLINE="$VOTING_DEADLINE"
-else
-  FINAL_VOTING_DEADLINE="$NEW_VOTING_DEADLINE"
-fi
-echo -e "📅 ${BLUE_COLOR}VOTING_DEADLINE:       $(date --date "@$((${FINAL_VOTING_DEADLINE} / 1000))")${NC}"
+FINAL_REGISTRATION_DEADLINE="$(normalize_ms "${REGISTRATION_DEADLINE:-}" "$NEW_REGISTRATION_DEADLINE")"
+FINAL_VOTING_DEADLINE="$(normalize_ms "${VOTING_DEADLINE:-}"       "$NEW_VOTING_DEADLINE")"
 
-# Crear archivo si no existe
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "✅ Creando nuevo archivo $ENV_FILE..."
-  cat > "$ENV_FILE" <<EOF
+# Impresión humana (divide a segundos sólo para 'date -d @segundos')
+print_human() {
+  local ms="$1"
+  local sec=$(( ms / 1000 ))
+  date --date "@${sec}"
+}
+
+echo -e "📅 ${BLUE_COLOR}REGISTRATION_DEADLINE: $(print_human "$FINAL_REGISTRATION_DEADLINE")${NC}"
+echo -e "📅 ${BLUE_COLOR}VOTING_DEADLINE:       $(print_human "$FINAL_VOTING_DEADLINE")${NC}"
+
+# Reescribe .env (sin sed)
+cat > "$ENV_FILE" <<EOF
 REGISTRATION_DEADLINE=$FINAL_REGISTRATION_DEADLINE
 VOTING_DEADLINE=$FINAL_VOTING_DEADLINE
 EOF
-  echo "👉 Ejecuta: direnv allow"
-  exit 0
-fi
-
-# Si existe, editar o añadir líneas
-
-update_or_add() { local var="$1"
-  local value="$2"
-
-  if grep -q "^$var=" "$ENV_FILE"; then
-    sed -i.bak "s|^$var=.*|$var=$value|" "$ENV_FILE"
-  else
-    echo "$var=$value" >> "$ENV_FILE"
-  fi
-}
-
-update_or_add "REGISTRATION_DEADLINE" "$FINAL_REGISTRATION_DEADLINE"
-update_or_add "VOTING_DEADLINE" "$FINAL_VOTING_DEADLINE"
-
-# Eliminar backup intermedio
-rm -f "${ENV_FILE}.bak"
 
 echo "✅ $ENV_FILE actualizado:"
 cat "$ENV_FILE"

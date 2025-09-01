@@ -1,7 +1,7 @@
-import { useAccount } from 'wagmi';
-import { Outlet } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { Modal } from './Modal';
+import { useAccount } from "wagmi";
+import { Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Modal } from "./Modal";
 
 export function ConnectedRoute() {
   const { isConnected } = useAccount();
@@ -23,6 +23,7 @@ export function ConnectedRoute() {
       message="Serás redirigido al Home..."
       onClose={() => setShowNoWalletModal(false)}
       redirectTo="/"
-      autoCloseDelay={4000} />
+      autoCloseDelay={4000}
+    />
   ) : null;
 }

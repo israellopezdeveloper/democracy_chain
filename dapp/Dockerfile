@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM docker.io/node:22-slim
 
 RUN apt-get update && apt-get install -y tini fzf && apt-get clean
 
@@ -18,4 +18,4 @@ RUN chown -R clistenes:clistenes /app
 USER clistenes
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["sh", "-c", "./scripts/deploy_n_run.sh --network=localhost --contract=DemocracyChain; node ./scripts/server.mjs & ./scripts/deploy_n_run.sh"]
+CMD ["sh", "-c", "node ./scripts/server.mjs & ./scripts/deploy_n_run.sh --network=localhost --contract=DemocracyChain; while true; do ./scripts/deploy_n_run.sh; done"]

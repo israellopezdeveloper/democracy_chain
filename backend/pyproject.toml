@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = "Backend service for the democracy project"
+authors = ["israellopezdeveloper <israel.lopez.developer@gmail.com>"]
+packages = [{ include = "backend", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = ">=0.116.1,<0.117.0"
+sqlalchemy = ">=2.0.41,<3.0.0"
+pymysql = ">=1.1.1,<2.0.0"
+aio-pika = ">=9.5.5,<10.0.0"
+qdrant-client = ">=1.15.0,<2.0.0"
+python-dotenv = ">=1.1.1,<2.0.0"
+pydantic = ">=2.11.7,<3.0.0"
+uvicorn = { extras = ["standard"], version = ">=0.35.0,<0.36.0" }
+pydantic-settings = ">=2.10.1,<3.0.0"
+sqlmodel = ">=0.0.24,<0.0.25"
+asyncmy = ">=0.2.10,<0.3.0"
+python-magic = ">=0.4.27,<0.5.0"
+python-multipart = ">=0.0.20,<0.0.21"
+cryptography = ">=45.0.5,<46.0.0"
+aiomysql = ">=0.2.0,<0.3.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+httpx = "^0.28.1"
+black = "^25.1.0"
+mypy = "^1.17.0"
+isort = "^6.0.1"
+sqlalchemy-stubs = "^0.4"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_executable = ".venv/bin/python"
+python_version = "3.12"
+strict = true
+mypy_path = "src"         # importante: que encuentre 'backend' bajo src
+namespace_packages = true
+explicit_package_bases = true

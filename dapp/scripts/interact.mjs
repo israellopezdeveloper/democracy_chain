@@ -21,11 +21,13 @@ async function interactWithContract(contractName, contract) {
   console.log(`   ABI SHA256: ${abiHash}`);
 
   const publicFunctions = abi.filter(
-    (item) => item.type === "function" && item.stateMutability !== "view"
+    (item) =>
+      item.type === "function" && item.stateMutability !== "view"
   );
 
   const viewFunctions = abi.filter(
-    (item) => item.type === "function" && item.stateMutability === "view"
+    (item) =>
+      item.type === "function" && item.stateMutability === "view"
   );
 
   if (publicFunctions.length === 0 && viewFunctions.length === 0) {
@@ -35,15 +37,22 @@ async function interactWithContract(contractName, contract) {
 
   while (true) {
     let width = process.stdout.columns - 2;
+    if (width < 0) {
+      width = 58;
+    }
     let horizontal = "─".repeat(width);
     console.log(`\n╭${horizontal}╮`);
     const choices = [
       ...publicFunctions.map((f) => ({
-        name: `Tx - ${f.name}(${f.inputs.map((i) => i.type).join(", ")})`,
+        name: `Tx - ${f.name}(${f.inputs
+          .map((i) => i.type)
+          .join(", ")})`,
         value: { name: f.name, inputs: f.inputs, isTx: true },
       })),
       ...viewFunctions.map((f) => ({
-        name: `View - ${f.name}(${f.inputs.map((i) => i.type).join(", ")})`,
+        name: `View - ${f.name}(${f.inputs
+          .map((i) => i.type)
+          .join(", ")})`,
         value: { name: f.name, inputs: f.inputs, isTx: false },
       })),
       new inquirer.Separator(),
@@ -83,7 +92,8 @@ async function interactWithContract(contractName, contract) {
     let overrides = {};
 
     const artifactFunc = abi.find(
-      (f) => f.name === func.name && f.inputs.length === func.inputs.length
+      (f) =>
+        f.name === func.name && f.inputs.length === func.inputs.length
     );
 
     if (
@@ -118,6 +128,9 @@ async function interactWithContract(contractName, contract) {
       console.error("❌ Error executing function:\n", error);
     }
     width = process.stdout.columns - 2;
+    if (width < 0) {
+      width = 58;
+    }
     horizontal = "─".repeat(width);
     console.log(`╰${horizontal}╯\n`);
   }
@@ -167,17 +180,22 @@ async function main() {
   if (networkName === "localhost" || networkName === "hardhat") {
     const [localSigner] = await hardhat.ethers.getSigners();
     signer = localSigner;
-    rpcUrl = process.env.HARDHAT_URL || "http://127.0.0.1:8545";
+    rpcUrl = process.env.BLOCKCHAIN_URL || "http://127.0.0.1:8545";
     const net = await hardhat.ethers.provider.getNetwork();
     chainId = net.chainId;
   } else {
     if (!process.env.PRIVATE_KEY || !process.env.INFURA_API_KEY) {
-      console.error("❌ Missing PRIVATE_KEY or API_KEY in .env file.");
+      console.error(
+        "❌ Missing PRIVATE_KEY or API_KEY in .env file."
+      );
       process.exit(1);
     }
     rpcUrl = `https://${networkName}.infura.io/v3/${process.env.INFURA_API_KEY}`;
     const provider = new hardhat.ethers.JsonRpcProvider(rpcUrl);
-    signer = new hardhat.ethers.Wallet(process.env.PRIVATE_KEY, provider);
+    signer = new hardhat.ethers.Wallet(
+      process.env.PRIVATE_KEY,
+      provider
+    );
     const net = await provider.getNetwork();
     chainId = net.chainId;
   }

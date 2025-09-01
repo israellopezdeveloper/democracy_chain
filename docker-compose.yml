@@ -8,9 +8,11 @@ services:
       - "8545:8545"
     environment:
       - NODE_ENV=production
-    user: "clistenes"
+    user: "${UID}:${GID}"
     networks:
-      - democracy
+      democracy:
+        aliases:
+          - hardhat-node
     deploy:
       resources:
         limits:
@@ -25,9 +27,9 @@ services:
     stdin_open: true
     tty: true
     environment:
-      - NODE_ENV=production
-      - HARDHAT_URL=http://hardhat-node:8545
-    user: "clistenes"
+      - NODE_ENV=${ENVIRONMENT:-production}
+      - BLOCKCHAIN_URL=${BLOCKCHAIN_URL:-http://hardhat-node:8545}
+    user: "${UID}:${GID}"
     depends_on:
       - hardhat-node
     networks:
@@ -41,101 +43,188 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend/
     container_name: democracy-frontend
     ports:
       - "80:5173"
+      - "8080:4173"
     environment:
-      - NODE_ENV=development # production
-      - VITE_HARDHAT_URL=http://hardhat-node:8545
-    user: "clistenes"
+      - NODE_ENV=${ENVIRONMENT:-development}
+      - VITE_BACKEND_URL=${BACKEND_URL:-http://localhost:8000/api/v1}
+      - VITE_CONTRACT_API_URL=${CONTRACT_API_URL:-http://localhost:3000}
+    user: "${UID}:${GID}"
     depends_on:
-      - hardhat-node
-      - deployer-interactor
+      rabbitmq:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
     networks:
       - democracy
     volumes: # Eliminar cuando haya terminado de desarrollar
       - ./frontend:/app
       - /app/node_modules
-    deploy:
-      resources:
-        limits:
-          memory: 512M
 
   qdrant:
-    image: qdrant/qdrant:latest
+    image: docker.io/qdrant/qdrant:latest
     container_name: democracy-qdrant
-    ports:
-      - "6333:6333"
+    restart: unless-stopped
     networks:
       - ragnet
     volumes:
       - qdrant_data:/qdrant/storage
-
+  
   rabbitmq:
     build:
       context: ./rabbitmq
+      args:
+        RABBITMQ_USER: ${RABBITMQ_USER:-rabbituser}
+        RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-securepassword123}
     container_name: democracy-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    user: "clistenes"
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_LOAD_DEFINITIONS=/etc/rabbitmq/definitions.json
+    user: "${UID}:${GID}"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - ragnet
 
   mysql:
-    image: mysql:9.3
+    image: docker.io/mysql:9.3
     container_name: democracy-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: democracy
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    ports:
-      - "3306:3306"
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-democracy}
+      - MYSQL_USER=${MYSQL_USER:-user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - ragnet
 
-
   backend:
     build:
       context: ./backend
     container_name: democracy-backend
-    user: "clistenes"
+    user: "${UID}:${GID}"
     volumes:
       - ./backend:/app # Eliminar cuando haya terminado de desarrollar
       - ./data:/data
     environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_DATABASE=democracy
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
+      - MYSQL_HOST=${MYSQL_HOST:-mysql}
+      - MYSQL_PORT=${MYSQL_PORT:-3306}
+      - MYSQL_URL=${MYSQL_URL:-mysql+asyncmy://user:password@mysql:3306/democracy}
+      - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-democracy}
+      - UPLOAD_DIR=/data/uploads
+      - FRONTEND_HOST=${FRONTEND_HOST:-http://localhost}
+      - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - LLM_MODEL=${LLM_MODEL:-llama2}
+      - LLM_URL=${LLM_URL:-http://llm:11434/api/chat}
+      - LLM_PROVIDER=ollama
+      - LLM_MODEL=${LLM_MODEL:-llama2}
     ports:
       - "8000:8000"
     depends_on:
-      - rabbitmq
-      - qdrant
+      rabbitmq:
+        condition: service_started
+      qdrant:
+        condition: service_started
+      mysql:
+        condition: service_started
+      llm:
+        condition: service_healthy
     networks:
       - ragnet
 
   worker:
-    build: ./worker
+    build:
+      context: ./worker
     container_name: democracy-worker
-    user: "clistenes"
     volumes:
       - ./data:/data
+    user: "${UID}:${GID}"
     depends_on:
-      - rabbitmq
-      - qdrant
+      rabbitmq:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/democracy}
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-democracy}
+      - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - UPLOAD_DIR=/data/uploads
+      - NVIDIA_VISIBLE_DEVICES=all
+      - PYTHONUNBUFFERED=1
     networks:
       - ragnet
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f src/worker/main.py || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    devices:     # <- CDI
+      - "nvidia.com/gpu=all"
+
+  llm:
+    build:
+      context: ./llm
+    container_name: democracy-llm
+    restart: unless-stopped
+    entrypoint: >
+      sh -c '
+        if [ "$${ENVIRONMENT}" = "development" ]; then
+          ollama serve & 
+          echo "Esperando a que Ollama esté disponible..." && 
+          until curl -s http://localhost:11434 > /dev/null; do sleep 2; done && 
+          echo "Descargando modelo $${LLM_MODEL:-llama2}..." && 
+          ollama pull $${LLM_MODEL:-llama2} && 
+          tail -f /dev/null;
+        else
+          echo "Entorno de producción - solo lanzando Ollama...";
+          exec ollama serve;
+        fi
+      '
+    ports: # TODO: eliminar
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama
+      - LLM_MODEL=${LLM_MODEL:-llama2}
+    user: "${UID}:${GID}"
+    networks:
+      - ragnet
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+        limits:
+          memory: 8g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:11434/api/tags >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    devices:     # <- CDI
+      - "nvidia.com/gpu=all"
 
 volumes:
   qdrant_data:
   mysql_data:
+  ollama_models:
 
 networks:
   democracy:

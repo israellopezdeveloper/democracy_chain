@@ -10,12 +10,14 @@
     "test": "npx hardhat test",
     "lint": "npx solhint 'contracts/*.sol'",
     "lint:fix": "npx solhint 'contracts/*.sol' --fix",
-    "format": "npx prettier --write .",
-    "coverage": "npx hardhat coverage"
+    "format:fix": "npx prettier --write .",
+    "coverage": "npx hardhat coverage",
+    "check": "make check"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.14",
+    "@nomicfoundation/solidity-analyzer-linux-x64-gnu": "^0.1.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "dotenv": "^17.2.0",
@@ -26,6 +28,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "ethers": "^6.15.0",
     "express": "^5.1.0"
   }
 }

@@ -2,11 +2,9 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -18,6 +16,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -43,9 +42,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -64,7 +65,6 @@ button:focus-visible {
   }
 }
 
-/* Parallax base styles */
 .parallax-container {
   position: fixed;
   width: 100%;
@@ -89,12 +89,12 @@ button:focus-visible {
 }
 
 .parallax-layer.back {
-  background-image: url('/mountains.png');
+  background-image: url("/mountains.png");
   transform: translateY(-20%);
 }
 
 .parallax-layer.front {
-  background-image: url('/rice-fields.png');
+  background-image: url("/rice-fields.png");
   transform: translateY(0%);
 }
 
@@ -103,7 +103,7 @@ button:focus-visible {
   width: -webkit-fill-available;
   top: 0px;
   left: 0px;
-  background-color: #FFFFFF99;
+  background-color: #ffffff99;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -116,7 +116,7 @@ button:focus-visible {
   width: -webkit-fill-available;
   bottom: 0px;
   left: 0px;
-  background-color: #FFFFFF99;
+  background-color: #ffffff99;
   color: #1e3a8a;
   display: flex;
   justify-content: space-between;
@@ -126,7 +126,7 @@ button:focus-visible {
 }
 
 .footer div {
-  background-color: #FFFFFF99;
+  background-color: #ffffff99;
   padding: 5px;
   border-radius: 15px 15px 15px 15px;
 }
@@ -146,10 +146,10 @@ button:focus-visible {
 }
 
 .menucontextual {
-  background-color: #FFFFFFFF;
+  background-color: #ffffffff;
   color: #1e3a8a;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   min-width: 160px;
   height: fit-content;
   padding: 10px 0;
@@ -169,9 +169,9 @@ main {
 
 main > div {
   border-radius: 15px;
-  background-color: #FFFFFFCC;
+  background-color: #ffffffcc;
   padding: 20px;
-  color: #6666FF;
+  color: #6666ff;
   max-width: 800px;
 }
 
@@ -181,7 +181,6 @@ main > div.GrapesJsApp {
   height: 81.7vh;
 }
 
-/* Tabla principal */
 .table-container {
   background: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
@@ -200,7 +199,7 @@ main > div.GrapesJsApp {
 }
 
 .table thead {
-  background: #2563eb; /* azul intenso */
+  background: #2563eb;
   color: white;
 }
 
@@ -224,7 +223,6 @@ main > div.GrapesJsApp {
   font-size: 1rem;
 }
 
-/* Responsive scroll hint */
 .table-container::-webkit-scrollbar {
   height: 8px;
 }
@@ -248,7 +246,7 @@ div.modal {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   padding: 40px;
   border-radius: 20px;
 }
@@ -258,11 +256,11 @@ div.modal * {
   width: 100%;
   top: 0px;
   left: 0px;
-  color: #000000FF;
+  color: #000000ff;
 }
 
 div.modal button {
-  color: #FFFFFFFF;
+  color: #ffffffff;
 }
 
 div.modal input {
@@ -270,82 +268,153 @@ div.modal input {
   min-height: 30px;
 }
 
-/* Estilos para el contenedor principal de tu formulario */
 .form-container {
-  /* Opcional: Centrar el formulario en la página */
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centra los divs de fila horizontalmente */
+  align-items: center;
   padding: 20px;
-  background-color: #e0e0d1; /* Color de fondo similar al de la imagen */
-  border: 1px solid #333; /* Borde oscuro similar al de la imagen */
-  width: fit-content; /* Ajusta el ancho al contenido */
-  margin: 50px auto; /* Centra el contenedor completo */
+  background-color: #e0e0d1;
+  border: 1px solid #333;
+  width: fit-content;
+  margin: 50px auto;
   border-radius: 20px;
 }
 
-/* Estilos para cada grupo de label e input */
 .form-row {
-  display: flex; /* Convierte cada fila en un contenedor flex */
-  align-items: center; /* Alinea los ítems verticalmente en el centro */
-  margin-bottom: 10px; /* Espacio entre filas */
-  width: 100%; /* Para que ocupen todo el ancho disponible en el contenedor padre */
-  justify-content: flex-end; /* Alinea los items al final (derecha) del row */
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+  justify-content: flex-end;
 }
 
 .form-row label {
-  flex-basis: 195px; /* Ancho fijo para el label, ajusta según necesites */
-  text-align: right; /* Alinea el texto del label a la derecha */
-  margin-right: 10px; /* Espacio entre el label y el input */
-  color: #6a5acd; /* Color azulado similar al de la imagen */
-  font-weight: bold; /* Opcional: para que resalte */
+  flex-basis: 195px;
+  text-align: right;
+  margin-right: 10px;
+  color: #6a5acd;
+  font-weight: bold;
 }
 
-.form-row input[type="text"] {
-  flex-grow: 1; /* Permite que el input ocupe el espacio restante */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #4a4a4a; /* Color de fondo de los inputs similar al de la imagen */
-  color: white; /* Color del texto del input */
+textarea,
+input[type="text"] {
+  font-family: inherit;
+  flex-grow: 1;
+  padding: 8px 15px;
+  border: 1px solid #6666ff;
+  box-shadow: inset 2px 2px 0.3em #6666ff;
+  border-radius: 25px;
+  background-color: #ffffffaa;
+  color: #333;
+  transition: all 0.5s ease-in-out;
 }
 
-/* Estilos para el botón */
+textarea {
+  min-height: 100px;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  border-radius: 0px;
+  box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
+}
+
 .form-button-container {
-  margin-top: 20px; /* Espacio encima del botón */
+  margin-top: 20px;
   width: 100%;
   display: flex;
-  justify-content: center; /* Centra el botón horizontalmente */
+  justify-content: center;
 }
 
 .form-button-container button {
   padding: 10px 20px;
-  background-color: #333; /* Color de fondo del botón similar al de la imagen */
+  background-color: #333;
   color: white;
   border: none;
-  border-radius: 5px; /* Bordes redondeados similares a la imagen */
+  border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
 }
 
-input:required {
-  border-color: #007bff; /* Un borde azul para los campos obligatorios */
+button.styled {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  border: 2px solid #e74c3c;
+  border-radius: 50px;
+  color: #e74c3c;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
+  font-weight: 400;
+  line-height: 1;
+  margin: 5px;
+  padding: 1em 2em;
+  text-decoration: none;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-color: #3498db;
+  color: #fff;
+  box-shadow:
+    0 0 40px 40px #3498db inset,
+    0 0 0 0 #3498db;
+  -webkit-transition: all 150ms ease-in-out;
+  transition: all 150ms ease-in-out;
 }
 
-/* Puedes añadir un asterisco usando pseudoelementos */
-label:has(+ input:required)::after { /* :has() es relativamente nuevo, verifica compatibilidad */
+button.styled:hover {
+  box-shadow:
+    0 0 10px 0 #3498db inset,
+    0 0 10px 4px #3498db;
+  color: #3498db;
+}
+
+input:required {
+  border-color: #007bff;
+}
+
+label:has(+ input:required)::after {
   content: " *";
   color: red;
   font-weight: bold;
 }
-
 
 div.viewer {
   padding: 1rem;
   border: 1px solid #ccc;
   border-radius: 12px;
   margin-top: 1rem;
-  background-color: #FFFFFFAA;
-  color: #000000FF;
+  background-color: #ffffffaa;
+  color: #000000ff;
+}
+
+.page-layout {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex-direction: row;
+}
+
+.chat-container {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .page-layout {
+    flex-direction: column;
+  }
+
+  .chat-container {
+    margin-top: 20px;
+    margin-bottom: 30px;
+  }
 }
