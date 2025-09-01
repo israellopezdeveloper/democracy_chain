@@ -1,4 +1,4 @@
-1 -  NVIM          - cls; conda activate personal; nvim
+1 -  NVIM          - cls; nvim
 2 - 🚀 Hardhat node - cls; sleep 3m; loop "🚀 Hardhat node" "make hh-console" 
 3 - 🚢 Deploy & Run - cls; make clean run
 4 -  Programs      - cls; sleep 3m; loop " Programs" "make programs"

@@ -113,10 +113,7 @@ export default function ChatBox({
         {messages.map((m, i) => {
           const isBot = m.startsWith("🤖") || m.startsWith("❌");
           return (
-            <div
-              key={i}
-              className={`chat-message ${isBot ? "bot" : "user"}`}
-            >
+            <div key={i} className={`chat-message ${isBot ? "bot" : "user"}`}>
               {m}
             </div>
           );

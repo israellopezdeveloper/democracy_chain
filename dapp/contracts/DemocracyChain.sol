@@ -88,6 +88,9 @@ contract DemocracyChain {
         }
         REGISTRATION_DEADLINE = _registrationDeadline;
         VOTING_DEADLINE = _votingDeadline;
+        // The comparison of times is in magnitudes of days, not seconds; the
+        // difference of +/- 15 seconds is not critical.
+        // solhint-disable-next-line not-rely-on-time
         if (block.timestamp > REGISTRATION_DEADLINE) {
             revert RegistrationClosed();
         }
@@ -116,6 +119,9 @@ contract DemocracyChain {
     }
 
     modifier registrationOpen() {
+        // The comparison of times is in magnitudes of days, not seconds; the
+        // difference of +/- 15 seconds is not critical.
+        // solhint-disable-next-line not-rely-on-time
         if (block.timestamp > REGISTRATION_DEADLINE) {
             revert RegistrationClosed();
         }
@@ -123,6 +129,9 @@ contract DemocracyChain {
     }
 
     modifier votingOpen() {
+        // The comparison of times is in magnitudes of days, not seconds; the
+        // difference of +/- 15 seconds is not critical.
+        // solhint-disable-next-line not-rely-on-time
         if (block.timestamp > VOTING_DEADLINE) {
             revert VotingClosed();
         }

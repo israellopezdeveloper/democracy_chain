@@ -22,7 +22,7 @@ model = SentenceTransformer(EMBEDDING_MODEL)
 qdrant = QdrantClient(url=QDRANT_URL)
 
 
-async def process_file(payload: str):
+async def process_file(payload: str) -> None:
     data = json.loads(payload)
     file = data["file"]
 
@@ -74,7 +74,7 @@ async def process_file(payload: str):
     print(f"[+] Ingested {len(points)} chunks from {filename}")
 
 
-def delete_file_vectors(payload: str):
+def delete_file_vectors(payload: str) -> None:
     print("delete_file_vectors 1", payload)
     data = json.loads(payload)
     print("delete_file_vectors 2", json)

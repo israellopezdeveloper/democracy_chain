@@ -27,8 +27,7 @@ def format_prompt(
             prompt += f"- {text.strip()}\n"
 
     prompt += (
-        "\nResponde de forma clara qué programas se ajustan mejor al criterio "
-        "del ciudadano. "
+        "\nResponde de forma clara qué programas se ajustan mejor al criterio " "del ciudadano. "
     )
     return prompt
 
@@ -49,9 +48,7 @@ def extract_wallets_from_response(text: str) -> tuple[str, list[str]]:
     return cleaned_text.strip(), wallets
 
 
-def query_llm(
-    user_query: str, chunks_by_wallet: dict[str, list[str]]
-) -> tuple[str, list[str]]:
+def query_llm(user_query: str, chunks_by_wallet: dict[str, list[str]]) -> tuple[str, list[str]]:
     prompt = format_prompt(user_query, chunks_by_wallet)
 
     json = settings.LLM_SETTINGS

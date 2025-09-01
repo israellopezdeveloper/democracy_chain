@@ -2,13 +2,15 @@ import asyncio
 import json
 
 import aio_pika
-from aio_pika.abc import AbstractIncomingMessage
+from aio_pika.abc import AbstractIncomingMessage, AbstractRobustConnection
 
 from worker.core.config import RABBITMQ_QUEUE, RABBITMQ_URL
 from worker.services.processor import delete_file_vectors, process_file
 
 
-async def wait_for_rabbitmq(url, retries=10, delay=3):
+async def wait_for_rabbitmq(
+    url: str, retries: int = 10, delay: int = 3
+) -> AbstractRobustConnection:
     for attempt in range(retries):
         try:
             connection = await aio_pika.connect_robust(url)
@@ -19,7 +21,7 @@ async def wait_for_rabbitmq(url, retries=10, delay=3):
     raise RuntimeError("RabbitMQ is not available after retries.")
 
 
-async def on_message(message: AbstractIncomingMessage):
+async def on_message(message: AbstractIncomingMessage) -> None:
     async with message.process():
         payload = json.loads(message.body.decode())
         print(f"[📨] Mensaje recibido {payload}")
@@ -39,7 +41,7 @@ async def on_message(message: AbstractIncomingMessage):
                 print(f"[!] Error processing remove: {e}")
 
 
-async def main():
+async def main() -> None:
     connection = await wait_for_rabbitmq(RABBITMQ_URL)
     channel = await connection.channel()
     queue = await channel.declare_queue(RABBITMQ_QUEUE, durable=True)

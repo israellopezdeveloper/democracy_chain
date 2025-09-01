@@ -14,7 +14,7 @@ model = SentenceTransformer(EMBEDDING_MODEL)
 qdrant = QdrantClient(url=QDRANT_URL)
 
 
-async def process_file(payload: str):
+async def process_file(payload: str) -> None:
     data = json.loads(payload)
     file = data["file"]
 

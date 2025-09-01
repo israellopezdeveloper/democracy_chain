@@ -16,7 +16,7 @@ export async function queryChat(embedding: number[]): Promise<ChatResponse> {
   return res.json();
 }
 
-export type WorkerInitiate = { status: "initiate" };
-export type WorkerLoading = { status: "loading"; progress: unknown };
-export type WorkerComplete = { status: "complete"; embedding: number[] };
+type WorkerInitiate = { status: "initiate" };
+type WorkerLoading = { status: "loading"; progress: unknown };
+type WorkerComplete = { status: "complete"; embedding: number[] };
 export type WorkerMessage = WorkerInitiate | WorkerLoading | WorkerComplete;

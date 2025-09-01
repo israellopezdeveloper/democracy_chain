@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_200_OK
@@ -28,7 +30,7 @@ async def delete_wallet(wallet_address: str) -> JSONResponse:
     except Exception:
         pass
 
-    content: list[dict] = [file.to_dict() for file in files]
+    content: list[dict[str, Any]] = [file.to_dict() for file in files]
     await send_message(
         {
             "add": [],

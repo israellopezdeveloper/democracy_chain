@@ -4,7 +4,8 @@
 
 ### **理念：**
 
-向每位通过链下身份验证（例如，使用西班牙数字证书）的公民发放一个 Soulbound Token（不可转让的 NFT）。只有拥有该 Token 的钱包才可在 DemocracyChain 智能合约中投票。
+向每位通过链下身份验证（例如，使用西班牙数字证书）的公民发放一个 Soulbound
+Token（不可转让的 NFT）。只有拥有该 Token 的钱包才可在 DemocracyChain 智能合约中投票。
 
 ### 🎯 **动机**
 

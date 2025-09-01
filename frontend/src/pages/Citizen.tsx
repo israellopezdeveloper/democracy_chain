@@ -70,8 +70,8 @@ export default function CitizenPage() {
       const citizenRaw = await publicClient.readContract({
         address: caddr,
         abi: cabi,
-        functionName: 'getCitizen',
-        args: [],             // si no lleva args, puedes omitir args
+        functionName: "getCitizen",
+        args: [], // si no lleva args, puedes omitir args
       });
       // @ts-expect-error "Dynamic ABI import"
       const citizen: Citizen = new Citizen(citizenRaw);
@@ -87,23 +87,30 @@ export default function CitizenPage() {
         const candidateRaw = await publicClient.readContract({
           address: caddr,
           abi: cabi,
-          functionName: 'candidates',
+          functionName: "candidates",
           args: [citizen.person.wallet],
         });
         // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(candidateRaw);
 
-        const candidateCreated = candidate.citizen.person.wallet === citizen.person.wallet;
+        const candidateCreated =
+          candidate.citizen.person.wallet === citizen.person.wallet;
         if (candidateCreated) {
           setIsCandidate(candidateCreated);
           setNewCandidate(candidateCreated);
-          const res = await fetch(`${BACKEND_URL}/${candidate.citizen.person.wallet}/program`);
+          const res = await fetch(
+            `${BACKEND_URL}/${candidate.citizen.person.wallet}/program`,
+          );
           setHasProgram(res.ok);
         } else if (newCandidate) {
-          retryRef.current = setTimeout(() => { void loadCitizen(); }, 1000);
+          retryRef.current = setTimeout(() => {
+            void loadCitizen();
+          }, 1000);
         }
       } else {
-        retryRef.current = setTimeout(() => { void loadCitizen(); }, 1000);
+        retryRef.current = setTimeout(() => {
+          void loadCitizen();
+        }, 1000);
       }
     } catch (e) {
       console.log("No existe", e);

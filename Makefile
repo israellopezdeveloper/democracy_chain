@@ -32,7 +32,7 @@ define wait_healthy
 	done
 endef
 
-.PHONY: clean run build programs hh-console backend-console create-zip up down logs wait-healthy
+.PHONY: clean run build programs hh-console backend-console create-zip up down logs wait-healthy check
 
 wait-healthy:
 	@$(call wait_healthy) > /dev/null 2>&1 && \
@@ -89,7 +89,7 @@ run:
 	  $(CLS); \
 	  $(BANNER) "🍻 Run application" "rainbow"; \
 	  services="$$( $(COMPOSE) config --services )"; \
-	  selection="$$(printf "0 - exit\n1 - all\n2 - rebuild\n3 - rerun\n4 - clean\n$$services" | fzf --prompt="🔍 Selecciona un servicio para ver logs: ")"; \
+	  selection="$$(printf "0 - exit\n1 - all\n2 - rebuild\n3 - rerun\n4 - clean\n5 - check\n$$services" | fzf --prompt="🔍 Selecciona un servicio para ver logs: ")"; \
 	  if [ "$$selection" = "0 - exit" ]; then \
 	    $(SUBBANNER) "🛑 Finalizando servicios..."; \
 	    $(COMPOSE) down --remove-orphans > /dev/null 2>&1 && \
@@ -101,9 +101,7 @@ run:
 	    $(COMPOSE) logs -f; \
 	  elif [ "$$selection" = "2 - rebuild" ]; then \
 	    $(SUBBANNER) "🟢 Rebuild."; \
-	    $(COMPOSE) build --no-cache && \
-	    printf "\033[0;32m   - Rebuild pods\033[0m\n" || \
-	    printf "\033[0;31m   - Rebuild pods\033[0m\n"; \
+	    $(MAKE) build; \
 	    $(COMPOSE) up -d > /dev/null 2>&1; \
 	    $(MAKE) wait_healthy && \
 	    printf "\033[0;32m   - Wait till ready\033[0m\n" || \
@@ -124,6 +122,13 @@ run:
 	    printf "\033[0;32m   - Running pods\033[0m\n" || \
 	    printf "\033[0;31m   - Running pods\033[0m\n"; \
 	    $(MAKE) wait_healthy; \
+	  elif [ "$$selection" = "5 - check" ]; then \
+	    $(SUBBANNER) "🟢 Check."; \
+	    $(MAKE) check; \
+	    $(COMPOSE) up -d > /dev/null 2>&1 && \
+	    printf "\033[0;32m   - Running pods\033[0m\n" || \
+	    printf "\033[0;31m   - Running pods\033[0m\n"; \
+	    $(MAKE) wait_healthy; \
 	  elif echo "$$services" | grep -q -w "$$selection"; then \
 	    $(SUBBANNER) "🟢 $$selection logs."; \
 	    $(COMPOSE) logs -f "$$selection"; \
@@ -134,9 +139,71 @@ run:
 
 build:
 	@$(BANNER) "🔨 Build application" "rainbow"
-	@$(COMPOSE) build --no-cache && \
-	    printf "\033[0;32m   - Rebuild pods\033[0m\n" || \
-	    printf "\033[0;31m   - Rebuild pods\033[0m\n"
+	@services="$$( $(COMPOSE) config --services )"; \
+	selection="$$(printf "0 - exit\n1 - all\n$$services" | fzf --prompt="🔨 Selecciona servicio a reconstruir: ")"; \
+	if [ "$$selection" = "0 - exit" ] || [ -z "$$selection" ]; then \
+	  printf "\033[0;33m   - Build cancelado\033[0m\n"; \
+	  exit 0; \
+	elif [ "$$selection" = "1 - all" ]; then \
+	  read -r -p "¿Forzar --no-cache? [y/N] " yn; \
+	  if [[ "$$yn" =~ ^[Yy]$$ ]]; then nocache="--no-cache"; else nocache=""; fi; \
+	  if $(COMPOSE) build $$nocache; then \
+	    printf "\033[0;32m   - Rebuild (all) OK\033[0m\n"; \
+	  else \
+	    printf "\033[0;31m   - Rebuild (all) FAIL\033[0m\n"; \
+	  fi; \
+	else \
+	  svc="$$selection"; \
+	  read -r -p "¿Forzar --no-cache? [y/N] " yn; \
+	  if [[ "$$yn" =~ ^[Yy]$$ ]]; then nocache="--no-cache"; else nocache=""; fi; \
+	  if $(COMPOSE) build $$nocache "$$svc"; then \
+	    printf "\033[0;32m   - Rebuild (\033[1m$$svc\033[0;32m) OK\033[0m\n"; \
+	  else \
+	    printf "\033[0;31m   - Rebuild (\033[1m$$svc\033[0;31m) FAIL\033[0m\n"; \
+	  fi; \
+	fi
+
+check:
+	@$(BANNER) "🧪 Check (subproyectos)" "rainbow"
+	@set -e; \
+	dirs="$$( \
+	  find . -mindepth 1 -maxdepth 2 -type f \( -name Makefile -o -name makefile \) \
+	    -not -path './.git/*' -not -path './node_modules/*' \
+	    -exec dirname {} \; | sed 's|^\./||' | sed 's|^\.||' | sed '/^$$/d' | sort -u \
+	)"; \
+	if [ -z "$$dirs" ]; then \
+	  printf "\033[0;33m   - No se encontraron Makefiles en subcarpetas directas\033[0m\n"; \
+	  exit 0; \
+	fi; \
+	selection="$$( printf "0 - exit\n1 - all\n%s\n" "$$dirs" | fzf --prompt="🧪 Selecciona dir para 'make check': " )"; \
+	if [ -z "$$selection" ] || [ "$$selection" = "0 - exit" ]; then \
+	  printf "\033[0;33m   - Check cancelado\033[0m\n"; exit 0; \
+	fi; \
+	if [ "$$selection" = "1 - all" ]; then \
+	  ok_list=""; fail_list=""; \
+	  for d in $$dirs; do \
+	    $(SUBBANNER) "🔎 $$d"; \
+	    if $(MAKE) -C "$$d" check; then \
+	      printf "\033[0;32m   ✓ $$d\033[0m\n"; \
+	      ok_list="$$ok_list $$d"; \
+	    else \
+	      printf "\033[0;31m   ✗ $$d\033[0m\n"; \
+	      fail_list="$$fail_list $$d"; \
+	    fi; \
+	  done; \
+	  printf "\n"; \
+	  [ -n "$$ok_list" ] && printf "\033[0;32mOK:\033[0m%s\n" "$$ok_list" || true; \
+	  [ -n "$$fail_list" ] && printf "\033[0;31mFAIL:\033[0m%s\n" "$$fail_list" || true; \
+	  [ -z "$$fail_list" ]; \
+	else \
+	  d="$$selection"; \
+	  $(SUBBANNER) "🔎 $$d"; \
+	  if $(MAKE) -C "$$d" check; then \
+	    printf "\033[0;32m   ✓ $$d\033[0m\n"; \
+	  else \
+	    printf "\033[0;31m   ✗ $$d\033[0m\n"; exit 1; \
+	  fi; \
+	fi
 
 programs:
 	@$(BANNER) "📰 Mock programs" "rainbow"

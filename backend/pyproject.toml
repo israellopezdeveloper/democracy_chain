@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "Backend service for the democracy project"
 authors = ["israellopezdeveloper <israel.lopez.developer@gmail.com>"]
 packages = [{ include = "backend", from = "src" }]
-# (Puedes eliminar README si no usas include-readme plugin)
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -28,10 +27,28 @@ aiomysql = ">=0.2.0,<0.3.0"
 pytest = "^8.4.1"
 httpx = "^0.28.1"
 black = "^25.1.0"
-isort = "^6.0.1"
 mypy = "^1.17.0"
+isort = "^6.0.1"
+sqlalchemy-stubs = "^0.4"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_executable = ".venv/bin/python"
+python_version = "3.12"
+strict = true
+mypy_path = "src"         # importante: que encuentre 'backend' bajo src
+namespace_packages = true
+explicit_package_bases = true

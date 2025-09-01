@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException
 from sqlalchemy import and_, update
+from sqlalchemy.sql import Select
 from sqlalchemy.sql.functions import count
 from sqlmodel import select
 from starlette.status import HTTP_404_NOT_FOUND
@@ -33,7 +34,7 @@ async def add(file: UploadedFile, overwrite: bool = False) -> None:
 
 async def read_all(wallet_address: str) -> list[UploadedFile]:
     async with get_async_session() as session:
-        stmt = select(UploadedFile).where(
+        stmt: Select = select(UploadedFile).where(
             UploadedFile.wallet_address == wallet_address,
         )
         results = await session.execute(stmt)
@@ -42,7 +43,7 @@ async def read_all(wallet_address: str) -> list[UploadedFile]:
 
 async def read(wallet_address: str, fileid: str) -> UploadedFile:
     async with get_async_session() as session:
-        file = await session.get(UploadedFile, (fileid, wallet_address))
+        file: UploadedFile | None = await session.get(UploadedFile, (fileid, wallet_address))
         if not file:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
@@ -53,9 +54,9 @@ async def read(wallet_address: str, fileid: str) -> UploadedFile:
 
 async def read_wallets() -> list[dict[str, str | int]]:
     async with get_async_session() as session:
-        stmt = select(
-            UploadedFile.wallet_address, count().label("file_count")
-        ).group_by(UploadedFile.wallet_address)
+        stmt: Select = select(UploadedFile.wallet_address, count().label("file_count")).group_by(
+            UploadedFile.wallet_address
+        )
         result = await session.execute(stmt)
         return [
             {
@@ -68,7 +69,7 @@ async def read_wallets() -> list[dict[str, str | int]]:
 
 async def remove_all(wallet_address: str) -> list[UploadedFile]:
     async with get_async_session() as session:
-        stmt = select(UploadedFile).where(
+        stmt: Select = select(UploadedFile).where(
             UploadedFile.wallet_address == wallet_address,
             UploadedFile.filename != "main",
         )
@@ -82,7 +83,7 @@ async def remove_all(wallet_address: str) -> list[UploadedFile]:
 
 async def remove(wallet_address: str, fileid: str) -> list[UploadedFile]:
     async with get_async_session() as session:
-        stmt = select(UploadedFile).where(
+        stmt: Select = select(UploadedFile).where(
             UploadedFile.wallet_address == wallet_address,
             UploadedFile.filename != "main",
         )
@@ -99,7 +100,7 @@ async def remove(wallet_address: str, fileid: str) -> list[UploadedFile]:
 
 async def remove_program(wallet_address: str) -> list[UploadedFile]:
     async with get_async_session() as session:
-        stmt = select(UploadedFile).where(
+        stmt: Select = select(UploadedFile).where(
             UploadedFile.wallet_address == wallet_address,
             UploadedFile.filename == "main",
         )
@@ -114,7 +115,7 @@ async def remove_program(wallet_address: str) -> list[UploadedFile]:
 
 async def remove_wallet(wallet_address: str) -> list[UploadedFile]:
     async with get_async_session() as session:
-        stmt = select(UploadedFile).where(
+        stmt: Select = select(UploadedFile).where(
             UploadedFile.wallet_address == wallet_address,
             UploadedFile.filename != "main",
         )

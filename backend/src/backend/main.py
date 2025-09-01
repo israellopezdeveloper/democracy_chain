@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +34,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(_: FastAPI) -> AsyncGenerator[Any, Any]:
     # Añadir aqui rabbitmq
     await init_db()
     yield  # Aquí se ejecuta la app

@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND
@@ -70,7 +72,7 @@ async def get_file(
 async def download_file(
     wallet_address: str,
     filename: str,
-):
+) -> FileResponse:
     if filename == "main":
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -78,7 +80,7 @@ async def download_file(
         )
 
     try:
-        file = storage.get(filename, wallet_address)
+        file: FileResponse = storage.get(filename, wallet_address)
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -92,7 +94,7 @@ async def download_file(
     "/{wallet_address}/file/{filename}/base64",
     response_class=PlainTextResponse,
 )
-async def get_file_base64(wallet_address: str, filename: str):
+async def get_file_base64(wallet_address: str, filename: str) -> PlainTextResponse:
     try:
         return PlainTextResponse(
             content=storage.get_base64(filename, wallet_address),
@@ -112,12 +114,9 @@ async def delete_files(
 ) -> JSONResponse:
     try:
         files = list(
-            set(
-                await database.remove_all(wallet_address)
-                + storage.delete_all(wallet_address)
-            )
+            set(await database.remove_all(wallet_address) + storage.delete_all(wallet_address))
         )
-        content: list[dict] = [file.to_dict() for file in files]
+        content: list[dict[str, Any]] = [file.to_dict() for file in files]
         await send_message(
             {
                 "add": [],
@@ -155,7 +154,7 @@ async def delete_file(
                 + storage.delete(fileid, wallet_address)
             )
         )
-        content: list[dict] = [file.to_dict() for file in files]
+        content: list[dict[str, Any]] = [file.to_dict() for file in files]
         await send_message(
             {
                 "add": [],

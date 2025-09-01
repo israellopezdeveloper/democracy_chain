@@ -244,7 +244,9 @@ export default function CandidatesPage() {
                         </button>
                       </td>
                       <td>
-                        <Link to={`/viewer?wallet=${encodeURIComponent(c.wallet)}`}>
+                        <Link
+                          to={`/viewer?wallet=${encodeURIComponent(c.wallet)}`}
+                        >
                           📄
                         </Link>
                       </td>
@@ -267,4 +269,3 @@ export default function CandidatesPage() {
     </>
   );
 }
-

@@ -1,23 +1,27 @@
 # 🗳️ 民主链（Democracy Chain）
 
-**Democracy Chain** 是一个旨在通过自动文档分析来帮助理解选举纲领的平台。它利用自然语言处理、嵌入技术、区块链和向量数据库，帮助选民发现最符合其理念的候选人。同时，它还包含一个基于 Web3 的 DApp，可与以太坊上的智能合约交互。
+<!-- markdownlint-disable MD013 -->
+
+**Democracy Chain**
+是一个旨在通过自动文档分析来帮助理解选举纲领的平台。它利用自然语言处理、嵌入技术、区块链和向量数据库，帮助选民发现最符合其理念的候选人。同时，它还包含一个基于 Web3 的 DApp，可与以太坊上的智能合约交互。
 
 该项目的诞生有两个主要动机：
 
 - **练习 Web3 技术和 RAG（检索增强生成）系统的使用**。
 - **推动更加真实和参与式的民主**，通过提供候选人提案的透明访问方式。
 
-通过这个应用，任何公民都可以成为候选人，这对民主参与非常有利。但这也可能导致**候选人数量激增**，使得选民很难做出明智的选择。
+通过这个应用，任何公民都可以成为候选人，这对民主参与非常有利。但这也可能导致
+**候选人数量激增**，使得选民很难做出明智的选择。
 
-解决方案是创建一个**智能搜索引擎**，选民可以用自然语言描述他们期望候选人提出的政策或价值观，然后系统将返回**与这些需求最匹配的10位候选人**。
+解决方案是创建一个**智能搜索引擎**，选民可以用自然语言描述他们期望候选人提出的 政策或价值观，然后系统将返回**与这些需求最匹配的10位候选人**。
 
 这将促进理性投票，减少政治“信息过载”。
 
----
+## <!-- markdownlint-enable MD013 -->
 
 ## 📁 项目结构
 
-```
+```text
 .
 ├── docker-compose.yml         # 服务编排配置
 ├── backend/                   # 文件上传的 REST API
@@ -116,13 +120,13 @@ docker-compose up --build
 
 ### 上传文件
 
-```
+```sh
 POST /api/v1/{wallet_address}/file
 ```
 
 ### 获取推荐候选人（计划中）
 
-```
+```sh
 GET /api/v1/suggest?query="free education"
 ```
 
@@ -133,7 +137,8 @@ GET /api/v1/suggest?query="free education"
 当文件被删除时：
 
 - 本地文件被清除
-- 与该文件相关的向量（通过 `wallet_address` 和 `filename`）从 Qdrant 中删除
+- 与该文件相关的向量（通过 `wallet_address` 和
+  `filename`）从 Qdrant 中删除
 
 ---
 
@@ -165,5 +170,5 @@ GET /api/v1/suggest?query="free education"
 
 ## 👤 作者
 
-**Israel López**
-[GitHub](https://github.com/your_user) | [LinkedIn](https://linkedin.com/in/your_user)
+**Israel López** [GitHub](https://github.com/your_user) |
+[LinkedIn](https://linkedin.com/in/your_user)

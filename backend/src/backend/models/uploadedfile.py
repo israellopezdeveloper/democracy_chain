@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlmodel import Field, SQLModel
 
@@ -9,7 +12,7 @@ class UploadedFile(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     mime_type: str = ""
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "filename": self.filename,
             "wallet_address": self.wallet_address,
@@ -17,13 +20,10 @@ class UploadedFile(SQLModel, table=True):
             "mime_type": self.mime_type,
         }
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.filename, self.wallet_address))
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, UploadedFile):
-            return (
-                self.filename == other.filename
-                and self.wallet_address == other.wallet_address
-            )
+            return self.filename == other.filename and self.wallet_address == other.wallet_address
         return False

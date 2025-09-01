@@ -4,22 +4,31 @@
 
 ### **Idea:**
 
-Issue a Soulbound Token (non-transferable NFT) to each citizen who has passed an off-chain identity verification process (e.g., via Spanish digital certificate). Only wallets holding this Soulbound Token will be allowed to vote in the DemocracyChain contract.
+Issue a Soulbound Token (non-transferable NFT) to each citizen who has
+passed an off-chain identity verification process (e.g., via Spanish
+digital certificate). Only wallets holding this Soulbound Token will
+be allowed to vote in the DemocracyChain contract.
 
 ### 🎯 **Motivation**
 
 - Prevent a person from voting with multiple wallets.
-- Preserve privacy: no storage of personal data or ID numbers on-chain.
-- Keep the on-chain process fully decentralized without exposing sensitive information.
-- Easily integrate with official e-identification systems (e.g., FNMT certificate).
-- Use well-known standards (ERC721) for a simple and secure implementation.
+- Preserve privacy: no storage of personal data or ID numbers
+  on-chain.
+- Keep the on-chain process fully decentralized without exposing
+  sensitive information.
+- Easily integrate with official e-identification systems (e.g., FNMT
+  certificate).
+- Use well-known standards (ERC721) for a simple and secure
+  implementation.
 
 ### ⚙️ **Execution Steps**
 
 ✅ **Step 1 — Develop a Soulbound Token Contract:**
 
-- Create an ERC721 and override the `transfer` function to disable token transfer.
-- Implement a `mintSoulbound(address to)` function callable only by the verification backend.
+- Create an ERC721 and override the `transfer` function to disable
+  token transfer.
+- Implement a `mintSoulbound(address to)` function callable only by
+  the verification backend.
 
 ✅ **Step 2 — Modify DemocracyChain:**
 
@@ -32,12 +41,15 @@ Issue a Soulbound Token (non-transferable NFT) to each citizen who has passed an
 
 ✅ **Step 3 — Build the Verification Backend:**
 
-- Integrate off-chain verification via digital certificate or other identity method.
-- If identity is verified, call `mintSoulbound` to issue the token to the citizen's wallet.
+- Integrate off-chain verification via digital certificate or other
+  identity method.
+- If identity is verified, call `mintSoulbound` to issue the token to
+  the citizen's wallet.
 
 ✅ **Step 4 — Issue Soulbound Token after Verification:**
 
-- Optionally store ID hashes in backend to prevent duplicate verifications.
+- Optionally store ID hashes in backend to prevent duplicate
+  verifications.
 - Notify the citizen that their wallet is now authorized to vote.
 
 ✅ **Step 5 — Update the Frontend:**
@@ -60,20 +72,28 @@ Semantic Search for Electoral Programs
 
 ## 🎯 **Motivation**
 
-Any citizen can become a candidate, which is positive for democratic participation. However, this may lead to **a large number of candidates**, making it difficult for voters to make informed decisions.
+Any citizen can become a candidate, which is positive for democratic
+participation. However, this may lead to **a large number of
+candidates**, making it difficult for voters to make informed
+decisions.
 
-The solution is to build an **intelligent search engine**, where voters can describe the kind of proposals or values they seek, and get the **10 most aligned candidates** based on their electoral programs.
+The solution is to build an **intelligent search engine**, where
+voters can describe the kind of proposals or values they seek, and get
+the **10 most aligned candidates** based on their electoral programs.
 
 This encourages informed voting and reduces political “infobesity.”
 
 ## 💡 **Proposal**
 
-- Each candidate uploads their **electoral program** (full text) to a backend.
+- Each candidate uploads their **electoral program** (full text) to a
+  backend.
 - The backend stores:
   - Full text (e.g., in a database).
-  - **Hash of the program** on the blockchain to guarantee immutability and transparency.
+  - **Hash of the program** on the blockchain to guarantee
+    immutability and transparency.
 
-- Programs are indexed in **Elasticsearch** using local **SBERT** embeddings.
+- Programs are indexed in **Elasticsearch** using local **SBERT**
+  embeddings.
 - Voters can enter natural language queries.
 - Elasticsearch returns the 10 most semantically similar programs.
 - Optionally: expose this functionality via REST API or frontend.
@@ -83,7 +103,8 @@ This encourages informed voting and reduces political “infobesity.”
 ✅ **Step 1 — Set Up Local Environment**
 
 - Install Elasticsearch OSS or OpenSearch.
-- Choose and download an SBERT model (e.g., `all-MiniLM-L6-v2`) from Hugging Face.
+- Choose and download an SBERT model (e.g., `all-MiniLM-L6-v2`) from
+  Hugging Face.
 
 ✅ **Step 2 — Index Electoral Programs**
 
@@ -102,7 +123,8 @@ This encourages informed voting and reduces political “infobesity.”
 
 ✅ **Step 4 — Blockchain Integration**
 
-- Store the hash of the full program on the blockchain (e.g., via a mapping in DemocracyChain).
+- Store the hash of the full program on the blockchain (e.g., via a
+  mapping in DemocracyChain).
 - Let users verify the document against the blockchain record.
 
 ✅ **Step 5 — Frontend (Optional)**
@@ -141,4 +163,5 @@ This encourages informed voting and reduces political “infobesity.”
 - 100% **offline-capable** and free (local SBERT + OSS stack).
 - High semantic search accuracy.
 - Guaranteed integrity via blockchain.
-- Scalable to hundreds of thousands of programs and millions of queries.
+- Scalable to hundreds of thousands of programs and millions of
+  queries.

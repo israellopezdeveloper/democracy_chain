@@ -1,4 +1,4 @@
-import { usePublicClient, useWalletClient, useAccount } from "wagmi";
+import { usePublicClient, useWalletClient } from "wagmi";
 import { getContract } from "viem";
 import { useEffect, useState } from "react";
 
@@ -44,11 +44,6 @@ export function useDemocracyContract(): DemocracyContract {
   }, [walletClient, publicClient]);
 
   return contract;
-}
-
-export function useIsWalletConnected(): boolean {
-  const { isConnected } = useAccount();
-  return isConnected;
 }
 
 type PersonInput =

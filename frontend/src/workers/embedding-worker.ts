@@ -1,5 +1,4 @@
 /// <reference lib="webworker" />
-/* eslint-disable no-restricted-globals */
 
 // src/workers/embedding-worker.ts
 import {
@@ -63,10 +62,14 @@ self.addEventListener("message", async (event: MessageEvent) => {
       status: "complete",
       embedding: Array.from(output.data as Float32Array | number[]),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = "Error desconocido en el worker.";
+    if (error instanceof Error) {
+      message = error.message;
+    }
     self.postMessage({
       status: "error",
-      error: error?.message ?? "Error desconocido en el worker.",
+      error: message,
     });
   }
 });

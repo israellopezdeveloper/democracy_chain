@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import json
 import os
+from typing import Any
 
 import aio_pika
 
@@ -7,7 +10,7 @@ RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/democ
 RABBITMQ_QUEUE = os.getenv("RABBITMQ_QUEUE", "democracy")
 
 
-async def send_message(message: dict):
+async def send_message(message: dict[str, Any]) -> None:
     connection = await aio_pika.connect_robust(RABBITMQ_URL)
     async with connection:
         channel = await connection.channel()

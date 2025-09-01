@@ -20,7 +20,7 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest) -> ChatResponse:
     try:
         grouped_chunks = get_similar_chunks(request.embedding)
 

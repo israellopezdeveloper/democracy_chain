@@ -2,8 +2,8 @@
 
 ## 🧠 Final Objective of the RAG System
 
-**Input:** A voter's preference in natural language
-**Output:** The 10 programs most aligned with that preference
+**Input:** A voter's preference in natural language **Output:** The 10
+programs most aligned with that preference
 
 ---
 
@@ -18,7 +18,8 @@
 | 1.3  | Store documents with metadata (`candidate`, `party`, `year`, etc.)                                          | Qdrant with structured payloads (`source_id`, `title`, `page`, `party`, `filename`, etc.) |
 | 1.4  | Implement a document processor worker that listens to RabbitMQ/Kafka to: `parse -> chunk -> embed -> index` | RabbitMQ (lightweight, already in infra), Qdrant, FastAPI Worker                          |
 
-📁 **Result**: All programs processed, embedded, and stored in Qdrant with metadata.
+📁 **Result**: All programs processed, embedded, and stored in Qdrant
+with metadata.
 
 ---
 
@@ -31,7 +32,8 @@
 | 2.3  | Add optional filters (`party`, `year`, `candidate`, etc.) in the search query                            | Qdrant supports boolean filters via `payload`                                             |
 | 2.4  | Final ranking: optionally re-rank results with `bge-reranker` or time-relevance weighted score           | `bge-reranker-base` for local semantic re-ranking                                         |
 
-📁 **Result**: A powerful, accurate, and customizable semantic search API.
+📁 **Result**: A powerful, accurate, and customizable semantic search
+API.
 
 ---
 
@@ -75,7 +77,8 @@
 ## 🧰 Minimal Free Local Requirements
 
 - 🔎 **Qdrant** (Docker) → vector DB with advanced filtering
-- 🧠 **Local Embedding Models** (BGE-small, E5-small) → lightweight and CPU-friendly
+- 🧠 **Local Embedding Models** (BGE-small, E5-small) → lightweight
+  and CPU-friendly
 - 🐇 **RabbitMQ** → already in `docker-compose.yml`
 - 🐍 **FastAPI** → for REST API ingestion and search
 - 🐳 **Docker Compose** → to orchestrate everything locally

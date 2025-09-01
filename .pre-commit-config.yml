@@ -1,0 +1,127 @@
+repos:
+  # Utilidades básicas universales
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+        files: ^(docker-compose\.ya?ml|.*\.ya?ml)$
+      - id: check-json
+        files: ^(frontend/.*\.json)$
+
+  # -------- PYTHON: backend & worker (Poetry) --------
+  - repo: local
+    hooks:
+      # backend: ruff + black + isort
+      - id: backend-python-style
+        name: backend | ruff+black+isort
+        entry: bash -lc 'cd backend && poetry run ruff check --fix . && poetry run black . && poetry run isort .'
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+
+      # worker: ruff + black + isort
+      - id: worker-python-style
+        name: worker | ruff+black+isort
+        entry: bash -lc 'cd worker && poetry run ruff check --fix . && poetry run black . && poetry run isort .'
+        language: system
+        files: ^worker/.*\.py$
+        pass_filenames: false
+
+      # Opcional (estático): mypy (rápido). Si prefieres, muévelo a pre-push.
+      - id: backend-mypy
+        name: backend | mypy
+        entry: bash -lc 'cd backend && poetry run mypy .'
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+
+      - id: worker-mypy
+        name: worker | mypy
+        entry: bash -lc 'cd worker && poetry run mypy .'
+        language: system
+        files: ^worker/.*\.py$
+        pass_filenames: false
+
+  # -------- FRONTEND: TypeScript/React (Vite) --------
+  - repo: local
+    hooks:
+      # ESLint
+      - id: frontend-eslint
+        name: frontend | eslint
+        entry: bash -lc 'npm --prefix frontend run lint'
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      # Prettier (no cambia estilo de TS rules)
+      - id: frontend-prettier
+        name: frontend | prettier --write
+        entry: bash -lc 'npm --prefix frontend run format:write'
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx|css|scss|md|json|yml|yaml)$
+        pass_filenames: false
+
+      # Typecheck (rápido; si es pesado, muévelo a pre-push)
+      - id: frontend-typecheck
+        name: frontend | tsc --noEmit
+        entry: bash -lc 'if command -v pnpm >/dev/null 2>&1; then pnpm -C frontend tsc --noEmit; else npm --prefix frontend run typecheck --silent; fi'
+        language: system
+        files: ^frontend/.*\.(ts|tsx)$
+        pass_filenames: false
+
+  # -------- DAPP: Solidity --------
+  - repo: local
+    hooks:
+      # Solhint
+      - id: dapp-solhint
+        name: dapp | solhint
+        entry: bash -lc 'if command -v pnpm >/dev/null 2>&1; then pnpm -C dapp solhint "contracts/**/*.sol"; else npx --yes --prefix dapp solhint "contracts/**/*.sol"; fi'
+        language: system
+        files: ^dapp/contracts/.*\.sol$
+        pass_filenames: false
+
+      # Prettier (con plugin de solidity si lo usas)
+      - id: dapp-prettier
+        name: dapp | prettier --write
+        entry: bash -lc 'if command -v pnpm >/dev/null 2>&1; then pnpm -C dapp prettier --write .; else npx --yes --prefix dapp prettier --write .; fi'
+        language: system
+        files: ^dapp/.*\.(sol|js|ts|md|json|yml|yaml)$
+        pass_filenames: false
+
+      # Opcional: Foundry fmt (si usas Foundry)
+      - id: dapp-foundry-fmt
+        name: dapp | forge fmt --check
+        entry: bash -lc 'cd dapp && if command -v forge >/dev/null 2>&1; then forge fmt --check; else echo "forge no está instalado, saltando"; fi'
+        language: system
+        files: ^dapp/contracts/.*\.sol$
+        pass_filenames: false
+
+  # -------- DOCUMENTATION: Markdown --------
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint
+        name: documentation | markdownlint
+        files: ^documentation/.*\.md$
+        args: ["--fix"]
+
+  # -------- SHELL / YAML extra --------
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: shellcheck
+        files: ^.*\.sh$
+
+  # -------- DOCKER COMPOSE LINT (yamllint) --------
+  - repo: local
+    hooks:
+      - id: yamllint-compose
+        name: root | yamllint docker-compose.yml
+        entry: bash -lc 'yamllint -s docker-compose.yml'
+        language: system
+        files: ^docker-compose\.ya?ml$
+        pass_filenames: false
+

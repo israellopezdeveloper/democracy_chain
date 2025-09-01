@@ -1,4 +1,6 @@
-from typing import Annotated, Any, ClassVar
+from __future__ import annotations
+
+from typing import Annotated, Any
 
 from pydantic import AnyUrl, BeforeValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -39,7 +41,7 @@ class Settings(BaseSettings):
     LLM_URL: str = "http://llm:11434/api/chat"
     LLM_MODEL: str = "llama2"
     # 🔧 Configuración constante del modelo
-    LLM_SETTINGS: ClassVar[dict] = {
+    LLM_SETTINGS: dict[str, Any] = {
         "model": LLM_MODEL,
         "messages": [
             {
@@ -64,7 +66,7 @@ class Settings(BaseSettings):
 
     @property
     def all_cors_origins(self) -> list[str]:
-        res: list = []
+        res: list[str] = []
         res += [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS]
         res += [self.FRONTEND_HOST]
         return res

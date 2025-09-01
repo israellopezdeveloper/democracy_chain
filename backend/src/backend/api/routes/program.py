@@ -1,9 +1,12 @@
+from typing import Any
+
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_409_CONFLICT,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from backend.models.uploadedfile import UploadedFile
@@ -19,11 +22,9 @@ async def program(
     wallet_address: str,
     file: UploadFile = File(...),  # noqa: B008
     overwrite: bool = Form(False),
-):
+) -> PlainTextResponse:
     try:
-        uploaded_file: UploadedFile = storage.upload_main(
-            file, wallet_address, overwrite
-        )
+        uploaded_file: UploadedFile = storage.upload_main(file, wallet_address, overwrite)
         await database.add(uploaded_file, overwrite=overwrite)
         await send_message(
             {
@@ -46,11 +47,15 @@ async def program(
                 status_code=HTTP_409_CONFLICT,
                 detail="A program file already exists for this wallet.",
             ) from err
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="A program file already exists for this wallet.",
+        ) from err
 
 
 #   Read
 @router.get("/{wallet_address}/program", response_class=Response)
-async def read_program(wallet_address: str):
+async def read_program(wallet_address: str) -> Response:
     file = storage.get("main", wallet_address)
     with open(file.path, "rb") as f:
         return Response(content=f.read(), media_type="application/octet-stream")
@@ -62,14 +67,11 @@ async def delete_program(wallet_address: str) -> JSONResponse:
     files = []
     try:
         files = list(
-            set(
-                await database.remove_program(wallet_address)
-                + storage.delete_main(wallet_address)
-            )
+            set(await database.remove_program(wallet_address) + storage.delete_main(wallet_address))
         )
     except Exception as e:
         print("================>", e)
-    content: list[dict] = [file.to_dict() for file in files]
+    content: list[dict[str, Any]] = [file.to_dict() for file in files]
     await send_message(
         {
             "add": [],

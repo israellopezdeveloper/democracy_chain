@@ -10,8 +10,9 @@
     "test": "npx hardhat test",
     "lint": "npx solhint 'contracts/*.sol'",
     "lint:fix": "npx solhint 'contracts/*.sol' --fix",
-    "format": "npx prettier --write .",
-    "coverage": "npx hardhat coverage"
+    "format:fix": "npx prettier --write .",
+    "coverage": "npx hardhat coverage",
+    "check": "make check"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",

@@ -24,10 +24,7 @@ def extract_text(filepath: str, mime_type: str) -> str:
         with pdfplumber.open(filepath) as pdf:
             return "\n".join(p.extract_text() or "" for p in pdf.pages)
 
-    elif (
-        mime_type
-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ):
+    elif mime_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         return "\n".join(p.text for p in docx.Document(filepath).paragraphs)
 
     elif mime_type in {
@@ -43,10 +40,7 @@ def extract_text(filepath: str, mime_type: str) -> str:
     }:
         prs = Presentation(filepath)
         return "\n".join(
-            shape.text
-            for slide in prs.slides
-            for shape in slide.shapes
-            if hasattr(shape, "text")
+            shape.text for slide in prs.slides for shape in slide.shapes if hasattr(shape, "text")
         )
 
     elif mime_type in {
