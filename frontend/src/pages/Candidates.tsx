@@ -27,8 +27,11 @@ function toBigInt(v: unknown): bigint {
 export default function CandidatesPage() {
   const contract = useDemocracyContract();
   const [candidates, setCandidates] = useState<CandidateItem[]>([]);
-  const [showErrorCandidateModal, setShowErrorCandidateModal] = useState("");
-  const [filterWallets, setFilterWallets] = useState<string[] | null>(null);
+  const [showErrorCandidateModal, setShowErrorCandidateModal] =
+    useState("");
+  const [filterWallets, setFilterWallets] = useState<string[] | null>(
+    null,
+  );
 
   const publicClient = usePublicClient()!;
   const location = useLocation();
@@ -56,7 +59,10 @@ export default function CandidatesPage() {
   // Persistir filterWallets
   useEffect(() => {
     if (filterWallets && filterWallets.length > 0) {
-      localStorage.setItem("filterWallets", JSON.stringify(filterWallets));
+      localStorage.setItem(
+        "filterWallets",
+        JSON.stringify(filterWallets),
+      );
     } else {
       localStorage.removeItem("filterWallets");
     }
@@ -177,7 +183,9 @@ export default function CandidatesPage() {
         return;
       }
       if (citizen.voted) {
-        setShowErrorCandidateModal("Solo puedes votar una vez por elección.");
+        setShowErrorCandidateModal(
+          "Solo puedes votar una vez por elección.",
+        );
         return;
       }
 

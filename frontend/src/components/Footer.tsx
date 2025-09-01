@@ -20,7 +20,8 @@ export default function Footer() {
   const contract = useDemocracyContract();
   const publicClient = usePublicClient();
 
-  const [registrationDate, setRegistrationDate] = useState<string>("");
+  const [registrationDate, setRegistrationDate] =
+    useState<string>("");
   const [votingDate, setVotingDate] = useState<string>("");
 
   const loadDates = useCallback(async () => {

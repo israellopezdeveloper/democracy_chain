@@ -15,8 +15,10 @@ export function useParallax() {
         ".parallax-layer.front",
       ) as HTMLElement;
 
-      if (back) back.style.transform = `translateY(${scrollPercent * -20}%)`;
-      if (front) front.style.transform = `translateY(${scrollPercent * 40}%)`;
+      if (back)
+        back.style.transform = `translateY(${scrollPercent * -20}%)`;
+      if (front)
+        front.style.transform = `translateY(${scrollPercent * 40}%)`;
     };
 
     window.addEventListener("scroll", handleScroll);

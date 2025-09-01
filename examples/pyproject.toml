@@ -1,0 +1,40 @@
+[project]
+name = "examples"
+version = "0.1.0"
+description = "Create electoral programs and deploy them"
+authors = [
+    {name = "israellopezdeveloper",email = "israel.lopez.developer@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+ruff = "^0.12.11"
+isort = "^6.0.1"
+mypy = "^1.17.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_executable = ".venv/bin/python"
+python_version = "3.13"
+strict = true

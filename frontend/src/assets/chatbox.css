@@ -62,7 +62,11 @@
   padding: 10px 12px;
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0)
+    ),
     #dcf8c6; /* verde tipo WhatsApp */
   border: 1px solid #bfe7a9;
   box-shadow:
@@ -75,7 +79,11 @@
 .chat-message.user {
   margin-left: auto;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0)
+    ),
     #dcf8c6;
   border: 1px solid #bfe7a9;
   border-top-right-radius: 4px;
@@ -83,7 +91,11 @@
 .chat-message.bot {
   margin-right: auto;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0)
+    ),
     #ececec;
   border: 1px solid #d0d0d0;
   border-top-left-radius: 4px;

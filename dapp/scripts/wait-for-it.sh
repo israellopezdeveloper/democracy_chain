@@ -7,7 +7,7 @@ timeout=30
 start_ts=$(date +%s)
 while :
 do
-    (echo > /dev/tcp/$host/$port) >/dev/null 2>&1 && break
+    (echo > "/dev/tcp/$host/$port") >/dev/null 2>&1 && break
     now_ts=$(date +%s)
     if [[ $((now_ts - start_ts)) -ge $timeout ]]; then
         echo "Timeout waiting for $host:$port"

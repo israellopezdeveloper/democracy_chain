@@ -91,7 +91,8 @@ class FileJSON {
       this.mime_type = data.mime_type;
     } else {
       this.filename = "";
-      this.wallet_address = "0x0000000000000000000000000000000000000000";
+      this.wallet_address =
+        "0x0000000000000000000000000000000000000000";
       this.created_at = "";
       this.mime_type = "";
     }
@@ -101,7 +102,9 @@ class FileJSON {
 export default function TiptapEditor() {
   const { address } = useAccount();
 
-  const [initialContent, setInitialContent] = useState<string | null>(null);
+  const [initialContent, setInitialContent] = useState<string | null>(
+    null,
+  );
   const [showSidebar, setShowSidebar] = useState(false);
   const [files, setFiles] = useState<FileJSON[]>([]);
   const BACKEND_URL = import.meta.env["VITE_BACKEND_URL"];
@@ -136,7 +139,9 @@ export default function TiptapEditor() {
     if (!editor || !address) return;
     try {
       const content = editor.getHTML();
-      const file = new File([content], "main.html", { type: "text/html" });
+      const file = new File([content], "main.html", {
+        type: "text/html",
+      });
       const formData = new FormData();
       formData.append("file", file);
       formData.append("overwrite", "true");
@@ -148,7 +153,9 @@ export default function TiptapEditor() {
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(`Error al guardar el contenido: ${errorText}`);
+        throw new Error(
+          `Error al guardar el contenido: ${errorText}`,
+        );
       }
     } catch (err) {
       console.error(err);
@@ -264,11 +271,15 @@ export default function TiptapEditor() {
         <button
           className="mt-4 bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded"
           onClick={async () => {
-            if (!confirm("¿Seguro que quieres borrar el programa?")) return;
+            if (!confirm("¿Seguro que quieres borrar el programa?"))
+              return;
             try {
-              const res = await fetch(`${BACKEND_URL}/${address}/program`, {
-                method: "DELETE",
-              });
+              const res = await fetch(
+                `${BACKEND_URL}/${address}/program`,
+                {
+                  method: "DELETE",
+                },
+              );
               if (!res.ok) throw new Error(await res.text());
               setInitialContent("<p></p>");
               editor.commands.setContent("<p></p>");
@@ -302,7 +313,9 @@ export default function TiptapEditor() {
           <FaItalic />
         </button>
         <button
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          onClick={() =>
+            editor.chain().focus().toggleUnderline().run()
+          }
           className={editor.isActive("underline") ? "active" : ""}
         >
           <FaUnderline />
@@ -310,11 +323,17 @@ export default function TiptapEditor() {
 
         <span className="separator" />
 
-        <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
+        <button
+          onClick={() =>
+            editor.chain().focus().toggleBulletList().run()
+          }
+        >
           <FaListUl />
         </button>
         <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          onClick={() =>
+            editor.chain().focus().toggleOrderedList().run()
+          }
         >
           <FaListOl />
         </button>
@@ -324,12 +343,15 @@ export default function TiptapEditor() {
         <select
           onChange={(e) => {
             const level = Number.parseInt(e.target.value, 10);
-            if (level === 0) editor.chain().focus().setParagraph().run();
+            if (level === 0)
+              editor.chain().focus().setParagraph().run();
             else
               editor
                 .chain()
                 .focus()
-                .toggleHeading({ level: level as 1 | 2 | 3 | 4 | 5 | 6 })
+                .toggleHeading({
+                  level: level as 1 | 2 | 3 | 4 | 5 | 6,
+                })
                 .run();
           }}
           value={
@@ -361,22 +383,30 @@ export default function TiptapEditor() {
         <span className="separator" />
 
         <button
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          onClick={() =>
+            editor.chain().focus().setTextAlign("left").run()
+          }
         >
           <FaAlignLeft />
         </button>
         <button
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          onClick={() =>
+            editor.chain().focus().setTextAlign("center").run()
+          }
         >
           <FaAlignCenter />
         </button>
         <button
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          onClick={() =>
+            editor.chain().focus().setTextAlign("right").run()
+          }
         >
           <FaAlignRight />
         </button>
         <button
-          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          onClick={() =>
+            editor.chain().focus().setTextAlign("justify").run()
+          }
         >
           <FaAlignJustify />
         </button>
@@ -393,7 +423,9 @@ export default function TiptapEditor() {
         <span className="separator" />
 
         <button
-          onClick={() => document.getElementById("uploadImageInput")?.click()}
+          onClick={() =>
+            document.getElementById("uploadImageInput")?.click()
+          }
         >
           <FaImage />
         </button>
@@ -410,11 +442,15 @@ export default function TiptapEditor() {
             formData.append("file", file);
 
             try {
-              let res = await fetch(`${BACKEND_URL}/${address}/file`, {
-                method: "POST",
-                body: formData,
-              });
-              if (res.status !== 201) throw new Error("Fallo al subir imagen");
+              let res = await fetch(
+                `${BACKEND_URL}/${address}/file`,
+                {
+                  method: "POST",
+                  body: formData,
+                },
+              );
+              if (res.status !== 201)
+                throw new Error("Fallo al subir imagen");
 
               const fileid = await res.text();
 
@@ -445,7 +481,9 @@ export default function TiptapEditor() {
         />
 
         <button
-          onClick={() => document.getElementById("uploadFileInput")?.click()}
+          onClick={() =>
+            document.getElementById("uploadFileInput")?.click()
+          }
         >
           <FaLink />
         </button>
@@ -461,16 +499,21 @@ export default function TiptapEditor() {
             formData.append("file", file);
 
             try {
-              const res = await fetch(`${BACKEND_URL}/${address}/file`, {
-                method: "POST",
-                body: formData,
-              });
-              if (res.status !== 201) throw new Error("Fallo al subir archivo");
+              const res = await fetch(
+                `${BACKEND_URL}/${address}/file`,
+                {
+                  method: "POST",
+                  body: formData,
+                },
+              );
+              if (res.status !== 201)
+                throw new Error("Fallo al subir archivo");
 
               const fileid = await res.text();
               const downloadUrl = `${BACKEND_URL}/${address}/file/${fileid}/download`;
 
-              const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+              const ext =
+                file.name.split(".").pop()?.toLowerCase() ?? "";
               const icon = extensionIcons[ext] || "📎";
               const linkHtml = `<a href="${downloadUrl}" download target="_blank" rel="noopener noreferrer">${icon} ${file.name}</a>`;
 
@@ -516,10 +559,15 @@ export default function TiptapEditor() {
                       .run();
                   } else {
                     const ext =
-                      file.filename.split(".").pop()?.toLowerCase() ?? "";
+                      file.filename.split(".").pop()?.toLowerCase() ??
+                      "";
                     const icon = extensionIcons[ext] || "📎";
                     const linkHtml = `<a href="${downloadUrl}" download target="_blank" rel="noopener noreferrer">${icon} ${file.filename.substring(file.filename.indexOf("_") + 1)}</a>`;
-                    editor.chain().focus().insertContent(linkHtml).run();
+                    editor
+                      .chain()
+                      .focus()
+                      .insertContent(linkHtml)
+                      .run();
                   }
                 };
 

@@ -21,7 +21,10 @@ module.exports = ts.config(
       // Import/order & errores comunes
       "import/order": [
         "error",
-        { "newlines-between": "always", alphabetize: { order: "asc" } },
+        {
+          "newlines-between": "always",
+          alphabetize: { order: "asc" },
+        },
       ],
       "import/no-unresolved": "error",
       "import/no-extraneous-dependencies": [
@@ -50,7 +53,10 @@ module.exports = ts.config(
         "error",
         { allowExpressions: true },
       ],
-      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+      "@typescript-eslint/consistent-type-definitions": [
+        "error",
+        "type",
+      ],
       "@typescript-eslint/no-misused-promises": [
         "error",
         { checksVoidReturn: { attributes: false } },

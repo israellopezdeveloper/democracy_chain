@@ -1,7 +1,17 @@
-import { useEffect, useRef, useState, useCallback, type JSX } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type JSX,
+} from "react";
 import "../assets/chatbox.css";
 import { useDemocracyContract } from "../hooks/useDemocracyContract";
-import { queryChat, type ChatResponse, type WorkerMessage } from "../api/chat";
+import {
+  queryChat,
+  type ChatResponse,
+  type WorkerMessage,
+} from "../api/chat";
 
 interface ChatBoxProps {
   onMatchedWallets?: (wallets: string[]) => void;
@@ -60,7 +70,9 @@ export default function ChatBox({
       );
     }
 
-    const onMessageReceived = async (e: MessageEvent<WorkerMessage>) => {
+    const onMessageReceived = async (
+      e: MessageEvent<WorkerMessage>,
+    ) => {
       switch (e.data.status) {
         case "initiate":
           setLoading(true);
@@ -93,7 +105,10 @@ export default function ChatBox({
     worker.current.addEventListener("message", onMessageReceived);
 
     return () => {
-      worker.current?.removeEventListener("message", onMessageReceived);
+      worker.current?.removeEventListener(
+        "message",
+        onMessageReceived,
+      );
     };
   }, [contract, onMatchedWallets]);
 
@@ -113,7 +128,10 @@ export default function ChatBox({
         {messages.map((m, i) => {
           const isBot = m.startsWith("🤖") || m.startsWith("❌");
           return (
-            <div key={i} className={`chat-message ${isBot ? "bot" : "user"}`}>
+            <div
+              key={i}
+              className={`chat-message ${isBot ? "bot" : "user"}`}
+            >
               {m}
             </div>
           );
@@ -141,7 +159,11 @@ export default function ChatBox({
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           disabled={loading}
         />
-        <button onClick={sendMessage} className="styled" disabled={loading}>
+        <button
+          onClick={sendMessage}
+          className="styled"
+          disabled={loading}
+        >
           {loading ? "⏳" : "Enviar"}
         </button>
       </div>

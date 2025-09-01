@@ -52,11 +52,16 @@ self.addEventListener("message", async (event: MessageEvent) => {
       return;
     }
 
-    const embedder = await EmbeddingPipeline.getInstance((progress) => {
-      self.postMessage({ status: "loading", progress });
-    });
+    const embedder = await EmbeddingPipeline.getInstance(
+      (progress) => {
+        self.postMessage({ status: "loading", progress });
+      },
+    );
 
-    const output = await embedder(text, { pooling: "mean", normalize: true });
+    const output = await embedder(text, {
+      pooling: "mean",
+      normalize: true,
+    });
 
     self.postMessage({
       status: "complete",

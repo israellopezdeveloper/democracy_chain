@@ -189,7 +189,9 @@ check:
 	    else \
 	      printf "\033[0;31m   ✗ $$d\033[0m\n"; \
 	      fail_list="$$fail_list $$d"; \
+	      exit 1; \
 	    fi; \
+	    echo -e "\n\n"; \
 	  done; \
 	  printf "\n"; \
 	  [ -n "$$ok_list" ] && printf "\033[0;32mOK:\033[0m%s\n" "$$ok_list" || true; \
@@ -204,6 +206,33 @@ check:
 	    printf "\033[0;31m   ✗ $$d\033[0m\n"; exit 1; \
 	  fi; \
 	fi
+check-ci:
+	@set -e; \
+	dirs="$$( \
+	  find . -mindepth 1 -maxdepth 2 -type f \( -name Makefile -o -name makefile \) \
+	    -not -path './.git/*' -not -path './node_modules/*' \
+	    -exec dirname {} \; | sed 's|^\./||' | sed 's|^\.||' | sed '/^$$/d' | sort -u \
+	)"; \
+	if [ -z "$$dirs" ]; then \
+	  printf "\033[0;33m   - No se encontraron Makefiles en subcarpetas directas\033[0m\n"; \
+	  exit 0; \
+	fi; \
+	ok_list=""; fail_list=""; \
+	for d in $$dirs; do \
+	  if $(MAKE) -C "$$d" check-ci; then \
+	    printf "\033[0;32m   ✓ $$d\033[0m\n"; \
+	    ok_list="$$ok_list $$d"; \
+	  else \
+	    printf "\033[0;31m   ✗ $$d\033[0m\n"; \
+	    fail_list="$$fail_list $$d"; \
+	    exit 1; \
+	  fi; \
+	  echo -e "\n\n"; \
+	done; \
+	printf "\n"; \
+	[ -n "$$ok_list" ] && printf "\033[0;32mOK:\033[0m%s\n" "$$ok_list" || true; \
+	[ -n "$$fail_list" ] && printf "\033[0;31mFAIL:\033[0m%s\n" "$$fail_list" || true; \
+	[ -z "$$fail_list" ]
 
 programs:
 	@$(BANNER) "📰 Mock programs" "rainbow"

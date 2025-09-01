@@ -1,5 +1,9 @@
 // src/extensions/ResizableImage.tsx
-import { Node, mergeAttributes, type CommandProps } from "@tiptap/core";
+import {
+  Node,
+  mergeAttributes,
+  type CommandProps,
+} from "@tiptap/core";
 import {
   NodeViewWrapper,
   ReactNodeViewRenderer,
@@ -7,9 +11,16 @@ import {
 } from "@tiptap/react";
 import React, { useRef } from "react";
 
-const ResizableImageComponent: React.FC<NodeViewRendererProps> = (props) => {
+const ResizableImageComponent: React.FC<NodeViewRendererProps> = (
+  props,
+) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const { src, width, height, "data-fileid": fileid } = props.node.attrs;
+  const {
+    src,
+    width,
+    height,
+    "data-fileid": fileid,
+  } = props.node.attrs;
 
   return (
     <NodeViewWrapper
@@ -28,7 +39,11 @@ const ResizableImageComponent: React.FC<NodeViewRendererProps> = (props) => {
       <img
         src={src}
         data-fileid={fileid}
-        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+        }}
       />
     </NodeViewWrapper>
   );

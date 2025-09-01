@@ -59,8 +59,14 @@ export default function Navbar() {
 
       {/* Overlay flotante del menú */}
       {open && (
-        <div className="menucontextual-bg" onClick={() => setOpen(false)}>
-          <div className="menucontextual" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="menucontextual-bg"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="menucontextual"
+            onClick={(e) => e.stopPropagation()}
+          >
             <NavbarItem title="Inicio" href="/" />
             <NavbarItem title="Ciudadano" href="/citizen" />
             <NavbarItem title="Candidatos" href="/candidates" />

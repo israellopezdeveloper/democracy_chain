@@ -20,7 +20,8 @@ describe("DemocracyChain", function () {
   beforeEach(async function () {
     [admin, user1, user2, user3] = await ethers.getSigners();
 
-    const blockTimestamp = (await ethers.provider.getBlock("latest")).timestamp;
+    const blockTimestamp = (await ethers.provider.getBlock("latest"))
+      .timestamp;
 
     registrationDeadline = blockTimestamp + 2 * 24 * 60 * 60;
     votingDeadline = blockTimestamp + 4 * 24 * 60 * 60;
@@ -39,11 +40,14 @@ describe("DemocracyChain", function () {
     expect(await democracy.REGISTRATION_DEADLINE()).to.equal(
       registrationDeadline
     );
-    expect(await democracy.VOTING_DEADLINE()).to.equal(votingDeadline);
+    expect(await democracy.VOTING_DEADLINE()).to.equal(
+      votingDeadline
+    );
   });
 
   it("should revert if registrationDeadline >= votingDeadline", async function () {
-    const blockTimestamp = (await ethers.provider.getBlock("latest")).timestamp;
+    const blockTimestamp = (await ethers.provider.getBlock("latest"))
+      .timestamp;
     const DemocracyChainFactory = await ethers.getContractFactory(
       "DemocracyChain"
     );
@@ -60,7 +64,9 @@ describe("DemocracyChain", function () {
   });
 
   it("should register a citizen", async function () {
-    await expect(democracy.connect(user1).registerCitizen(DNI1, NAME1))
+    await expect(
+      democracy.connect(user1).registerCitizen(DNI1, NAME1)
+    )
       .to.emit(democracy, "CitizenRegistered")
       .withArgs(user1.address, DNI1);
 
@@ -77,11 +83,16 @@ describe("DemocracyChain", function () {
 
     await expect(
       democracy.connect(user1).registerCitizen(DNI1, NAME1)
-    ).to.be.revertedWithCustomError(democracy, "CitizenAlreadyRegistered");
+    ).to.be.revertedWithCustomError(
+      democracy,
+      "CitizenAlreadyRegistered"
+    );
   });
 
   it("should register a citizen as candidate directly", async function () {
-    await expect(democracy.connect(user1).addCitizenCandidate(DNI1, NAME1))
+    await expect(
+      democracy.connect(user1).addCitizenCandidate(DNI1, NAME1)
+    )
       .to.emit(democracy, "CandidateAdded")
       .withArgs(user1.address, DNI1, NAME1);
 
@@ -115,14 +126,18 @@ describe("DemocracyChain", function () {
 
     await expect(
       democracy.connect(user1).addCandidate()
-    ).to.be.revertedWithCustomError(democracy, "CandidateAlreadyRegistered");
+    ).to.be.revertedWithCustomError(
+      democracy,
+      "CandidateAlreadyRegistered"
+    );
   });
 
   it("should allow voting for a valid candidate", async function () {
     await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
     await democracy.connect(user2).registerCitizen(DNI2, NAME2);
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await expect(democracy.connect(user2).vote(voted))
       .to.emit(democracy, "Voted")
       .withArgs(user2.address, DNI1);
@@ -138,7 +153,8 @@ describe("DemocracyChain", function () {
     await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
     await democracy.connect(user2).registerCitizen(DNI2, NAME2);
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await democracy.connect(user2).vote(voted);
 
     await expect(
@@ -149,14 +165,17 @@ describe("DemocracyChain", function () {
   it("should revert voting for non-existent candidate", async function () {
     await democracy.connect(user2).registerCitizen(DNI2, NAME2);
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await expect(
       democracy.connect(user2).vote(voted)
     ).to.be.revertedWithCustomError(democracy, "NotValidCandidate");
   });
 
   it("should revert registration after deadline", async function () {
-    await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_increaseTime", [
+      3 * 24 * 60 * 60,
+    ]);
     await ethers.provider.send("evm_mine");
 
     await expect(
@@ -168,10 +187,13 @@ describe("DemocracyChain", function () {
     await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
     await democracy.connect(user2).registerCitizen(DNI2, NAME2);
 
-    await ethers.provider.send("evm_increaseTime", [5 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_increaseTime", [
+      5 * 24 * 60 * 60,
+    ]);
     await ethers.provider.send("evm_mine");
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await expect(
       democracy.connect(user2).vote(voted)
     ).to.be.revertedWithCustomError(democracy, "VotingClosed");
@@ -194,7 +216,9 @@ describe("DemocracyChain", function () {
 
   it("should return empty candidate if not exists", async function () {
     const candidate = await democracy.getCandidate(DNI3);
-    expect(candidate.citizen.person.wallet).to.equal(ethers.ZeroAddress);
+    expect(candidate.citizen.person.wallet).to.equal(
+      ethers.ZeroAddress
+    );
     expect(candidate.voteCount).to.equal(0);
   });
 
@@ -220,7 +244,8 @@ describe("DemocracyChain", function () {
 
   it("should allow a candidate to vote for themselves", async function () {
     await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await democracy.connect(user1).vote(voted);
     const candidate = await democracy.getCandidate(DNI1);
     expect(candidate.voteCount).to.equal(1);
@@ -232,8 +257,10 @@ describe("DemocracyChain", function () {
 
     await democracy.connect(user3).registerCitizen(DNI3, NAME3);
 
-    const voted1 = (await democracy.connect(user1).getCitizen()).person.wallet;
-    const voted2 = (await democracy.connect(user2).getCitizen()).person.wallet;
+    const voted1 = (await democracy.connect(user1).getCitizen())
+      .person.wallet;
+    const voted2 = (await democracy.connect(user2).getCitizen())
+      .person.wallet;
     await democracy.connect(user2).vote(voted1);
     await democracy.connect(user3).vote(voted2);
 
@@ -248,7 +275,8 @@ describe("DemocracyChain", function () {
     // Only works if you add this function to your contract:
     // function testOnlyAdmin() external onlyAdmin { }
     if (democracy.testOnlyAdmin) {
-      await expect(democracy.connect(admin).testOnlyAdmin()).to.not.be.reverted;
+      await expect(democracy.connect(admin).testOnlyAdmin()).to.not.be
+        .reverted;
     }
   });
 
@@ -265,7 +293,10 @@ describe("DemocracyChain", function () {
 
     await expect(
       democracy.connect(user2).registerCitizen(DNI1, NAME2)
-    ).to.be.revertedWithCustomError(democracy, "CitizenAlreadyRegistered");
+    ).to.be.revertedWithCustomError(
+      democracy,
+      "CitizenAlreadyRegistered"
+    );
   });
 
   it("should revert if trying to add candidate with DNI of existing citizen", async function () {
@@ -273,7 +304,10 @@ describe("DemocracyChain", function () {
 
     await expect(
       democracy.connect(user2).addCitizenCandidate(DNI1, NAME2)
-    ).to.be.revertedWithCustomError(democracy, "CitizenAlreadyRegistered");
+    ).to.be.revertedWithCustomError(
+      democracy,
+      "CitizenAlreadyRegistered"
+    );
   });
 
   it("should count votes from different citizens for same candidate", async function () {
@@ -282,7 +316,8 @@ describe("DemocracyChain", function () {
     await democracy.connect(user2).registerCitizen(DNI2, NAME2);
     await democracy.connect(user3).registerCitizen(DNI3, NAME3);
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await democracy.connect(user2).vote(voted);
     await democracy.connect(user3).vote(voted);
 
@@ -300,13 +335,17 @@ describe("DemocracyChain", function () {
 
     await expect(
       democracy.connect(user1).addCandidate()
-    ).to.be.revertedWithCustomError(democracy, "CandidateAlreadyRegistered");
+    ).to.be.revertedWithCustomError(
+      democracy,
+      "CandidateAlreadyRegistered"
+    );
   });
 
   it("should revert vote if user is not registered", async function () {
     await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     await expect(
       democracy.connect(user2).vote(voted)
     ).to.be.revertedWithCustomError(democracy, "NotRegistered");
@@ -315,7 +354,8 @@ describe("DemocracyChain", function () {
   it("should revert vote if candidateList is empty", async function () {
     await democracy.connect(user1).registerCitizen(DNI1, NAME1);
 
-    const voted = (await democracy.connect(user2).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user2).getCitizen()).person
+      .wallet;
     await expect(
       democracy.connect(user1).vote(voted)
     ).to.be.revertedWithCustomError(democracy, "NotValidCandidate");
@@ -329,7 +369,9 @@ describe("DemocracyChain", function () {
   });
 
   it("should consume reasonable gas for registerCitizen", async function () {
-    const tx = await democracy.connect(user1).registerCitizen(DNI1, NAME1);
+    const tx = await democracy
+      .connect(user1)
+      .registerCitizen(DNI1, NAME1);
     const receipt = await tx.wait();
 
     // Ejemplo de aserción de máximo gas esperado
@@ -337,7 +379,9 @@ describe("DemocracyChain", function () {
   });
 
   it("should consume reasonable gas for addCitizenCandidate", async function () {
-    const tx = await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
+    const tx = await democracy
+      .connect(user1)
+      .addCitizenCandidate(DNI1, NAME1);
     const receipt = await tx.wait();
 
     expect(receipt.gasUsed).to.be.lt(300_000);
@@ -355,7 +399,8 @@ describe("DemocracyChain", function () {
     await democracy.connect(user1).addCitizenCandidate(DNI1, NAME1);
     await democracy.connect(user2).registerCitizen(DNI2, NAME2);
 
-    const voted = (await democracy.connect(user1).getCitizen()).person.wallet;
+    const voted = (await democracy.connect(user1).getCitizen()).person
+      .wallet;
     const tx = await democracy.connect(user2).vote(voted);
     const receipt = await tx.wait();
 
@@ -371,7 +416,8 @@ describe("DemocracyChain", function () {
   });
 
   it("should revert if block.timestamp >= registrationDeadline", async function () {
-    const blockTimestamp = (await ethers.provider.getBlock("latest")).timestamp;
+    const blockTimestamp = (await ethers.provider.getBlock("latest"))
+      .timestamp;
 
     // deliberately set registrationDeadline in the past
     const regDeadline = blockTimestamp - 1;

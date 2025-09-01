@@ -36,7 +36,9 @@ export default function CitizenPage() {
     setIsDisabledAll(true);
     try {
       // @ts-expect-error "Dynamic ABI import"
-      const citizen: Citizen = new Citizen(await contract.read.getCitizen([]));
+      const citizen: Citizen = new Citizen(
+        await contract.read.getCitizen([]),
+      );
       if (!citizen.registered) {
         if (newCandidate) {
           // @ts-expect-error "Dynamic ABI import"
@@ -133,7 +135,8 @@ export default function CitizenPage() {
         fromBlock,
         onLogs: (logs) => {
           for (const log of logs) {
-            const args = (log as { args?: Record<string, unknown> }).args!;
+            const args = (log as { args?: Record<string, unknown> })
+              .args!;
             const wallet = args["wallet"];
             if (
               isAddress(wallet) &&
@@ -157,7 +160,8 @@ export default function CitizenPage() {
         fromBlock,
         onLogs: (logs) => {
           for (const log of logs) {
-            const args = (log as { args?: Record<string, unknown> }).args!;
+            const args = (log as { args?: Record<string, unknown> })
+              .args!;
             const wallet = args["wallet"];
             if (
               isAddress(wallet) &&

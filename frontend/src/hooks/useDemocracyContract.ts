@@ -12,7 +12,10 @@ interface ContractInfo {
 }
 
 export function useDemocracyContract(): DemocracyContract {
-  const publicClient = usePublicClient() as PublicClient<Transport, Chain>;
+  const publicClient = usePublicClient() as PublicClient<
+    Transport,
+    Chain
+  >;
   const { data: walletClient } = useWalletClient();
   const [contract, setContract] = useState<ReturnType<
     typeof getContract
@@ -21,12 +24,14 @@ export function useDemocracyContract(): DemocracyContract {
   useEffect(() => {
     const fetchContract = async () => {
       const API_URL =
-        import.meta.env["VITE_CONTRACT_API_URL"] || "http://localhost:3000";
+        import.meta.env["VITE_CONTRACT_API_URL"] ||
+        "http://localhost:3000";
 
-      const [abi, { address }]: [Abi, ContractInfo] = await Promise.all([
-        fetch(`${API_URL}/abi`).then((res) => res.json()),
-        fetch(`${API_URL}/address`).then((res) => res.json()),
-      ]);
+      const [abi, { address }]: [Abi, ContractInfo] =
+        await Promise.all([
+          fetch(`${API_URL}/abi`).then((res) => res.json()),
+          fetch(`${API_URL}/address`).then((res) => res.json()),
+        ]);
 
       const client = walletClient ?? publicClient;
       if (!client || !abi || !address) return;

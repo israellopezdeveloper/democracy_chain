@@ -1,14 +1,14 @@
-const { ethers } = require("ethers");
+import { ethers } from "ethers";
 
-const fs = require("fs");
-const path = require("path");
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 async function main() {
   const [, , founderPk, dni, name] = process.argv;
 
   if (!founderPk || !dni || !name) {
     console.error(
-      "❌ Usage: node register-candidate.js <founderPrivateKey> <dni> <name>"
+      "❌ Usage: node register-candidate.js <founderPrivateKey> <dni> <name>",
     );
     process.exit(1);
   }
@@ -16,13 +16,13 @@ async function main() {
   const RPC_URL = "http://localhost:8545";
   const FUNDING_AMOUNT_ETH = "1.0";
   const CONTRACT_ADDRESS = ethers.getAddress(
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   );
-  const abiPath = path.resolve(
+  const abiPath = resolve(
     __dirname,
-    "../../dapp/artifacts/contracts/DemocracyChain.sol/DemocracyChain.json"
+    "../../dapp/artifacts/contracts/DemocracyChain.sol/DemocracyChain.json",
   );
-  const artifact = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+  const artifact = JSON.parse(readFileSync(abiPath, "utf8"));
   const abi = artifact.abi;
 
   const provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -37,7 +37,11 @@ async function main() {
   await txFund.wait();
 
   const connectedWallet = newWallet.connect(provider);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, connectedWallet);
+  const contract = new ethers.Contract(
+    CONTRACT_ADDRESS,
+    abi,
+    connectedWallet,
+  );
 
   const tx = await contract.addCitizenCandidate(dni, name);
   await tx.wait();
@@ -47,7 +51,7 @@ async function main() {
     JSON.stringify({
       wallet: newWallet.address,
       private_key: newWallet.privateKey,
-    })
+    }),
   );
 }
 
