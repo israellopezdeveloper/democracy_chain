@@ -83,20 +83,12 @@ export default function CitizenPage() {
         setIsDisabled(true);
         setIsDisabledAll(false);
 
-        // walletToDni(wallet)
-        const addressFromDni = await publicClient.readContract({
-          address: caddr,
-          abi: cabi,
-          functionName: 'walletToDni',
-          args: [citizen.person.wallet],
-        });
-
         // candidates(dni)
         const candidateRaw = await publicClient.readContract({
           address: caddr,
           abi: cabi,
           functionName: 'candidates',
-          args: [addressFromDni],
+          args: [citizen.person.wallet],
         });
         // @ts-expect-error "Dynamic ABI import"
         const candidate: Candidate = new Candidate(candidateRaw);

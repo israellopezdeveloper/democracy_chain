@@ -108,9 +108,8 @@ contract DemocracyChain {
         _;
     }
 
-    modifier onlyValidCandidate(bytes32 _dniHash) {
-        address wallet = dniToWallet[_dniHash];
-        if (candidates[wallet].citizen.person.wallet == address(0)) {
+    modifier onlyValidCandidate(address _wallet) {
+        if (candidates[_wallet].citizen.person.wallet == address(0)) {
             revert NotValidCandidate();
         }
         _;
@@ -226,24 +225,23 @@ contract DemocracyChain {
 
     /**
      * @notice Casts a vote for a candidate.
-     * @param _dni The DNI of the candidate being voted for.
+     * @param _wallet The wallet address of the candidate being voted for.
      */
     function vote(
-        string calldata _dni
+        address _wallet
     )
         external
         onlyRegistered
         hasNotVoted
         votingOpen
-        onlyValidCandidate(_dni.toHash())
+        onlyValidCandidate(_wallet)
     {
-        bytes32 dniHash = _dni.toHash();
-
-        ++candidates[dniToWallet[dniHash]].voteCount;
+        ++candidates[_wallet].voteCount;
 
         citizens[msg.sender].voted = true;
 
-        emit Voted(msg.sender, _dni);
+        string memory dni = citizens[_wallet].person.dni;
+        emit Voted(msg.sender, dni);
     }
 
     /**

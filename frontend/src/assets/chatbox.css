@@ -35,26 +35,25 @@
   cursor: pointer;
 }
 
-
 .chat-messages {
   flex: 1;
-  overflow-y: auto;                /* 👉 solo scroll vertical */
-  overflow-x: hidden;              /* 👉 sin scroll horizontal */
+  overflow-y: auto; /* 👉 solo scroll vertical */
+  overflow-x: hidden; /* 👉 sin scroll horizontal */
   padding: 14px;
   border-radius: 12px;
   background: #ffffff;
 
   /* 👉 borde + sombreado interior */
   box-shadow:
-    inset 0 0 0 2px #cfd1ff,        /* borde interno violeta */
-    inset 0 8px 16px rgba(0,0,0,.15),
-    inset 0 -8px 16px rgba(0,0,0,.15),
-    inset 8px 0 12px rgba(0,0,0,.1),
-    inset -8px 0 12px rgba(0,0,0,.1);
+    inset 0 0 0 2px #cfd1ff,
+    /* borde interno violeta */ inset 0 8px 16px rgba(0, 0, 0, 0.15),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.15),
+    inset 8px 0 12px rgba(0, 0, 0, 0.1),
+    inset -8px 0 12px rgba(0, 0, 0, 0.1);
 
   display: flex;
   flex-direction: column;
-  gap: 8px;                        /* espacio entre burbujas */
+  gap: 8px; /* espacio entre burbujas */
   margin-bottom: 8px;
 }
 
@@ -63,10 +62,12 @@
   padding: 10px 12px;
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0)),
-    #dcf8c6;                        /* verde tipo WhatsApp */
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)),
+    #dcf8c6; /* verde tipo WhatsApp */
   border: 1px solid #bfe7a9;
-  box-shadow: 0 1px 1px rgba(0,0,0,.05), 0 2px 6px rgba(0,0,0,.06);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.06);
   color: #223;
 }
 
@@ -74,7 +75,7 @@
 .chat-message.user {
   margin-left: auto;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)),
     #dcf8c6;
   border: 1px solid #bfe7a9;
   border-top-right-radius: 4px;
@@ -82,9 +83,8 @@
 .chat-message.bot {
   margin-right: auto;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0)),
     #ececec;
   border: 1px solid #d0d0d0;
   border-top-left-radius: 4px;
 }
-
