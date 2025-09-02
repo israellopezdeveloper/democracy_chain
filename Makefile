@@ -236,7 +236,7 @@ check-ci:
 
 programs:
 	@$(BANNER) "📰 Mock programs" "rainbow"
-	@cd examples && ./scripts/register_programs.sh
+	@cd examples && npm i && ./scripts/register_programs.sh
 
 hh-console:
 	@$(BANNER) "  Hardhat console"
