@@ -1,7 +1,7 @@
 export default function AboutPage() {
   return (
     <main>
-      <div>
+      <div style={{ marginBottom: "60px" }}>
         <img src="/freedom.svg" alt="Freedom" />
         <div>
           <h1>Democracy Chain</h1>

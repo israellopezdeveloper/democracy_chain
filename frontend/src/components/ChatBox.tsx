@@ -185,7 +185,7 @@ export default function ChatBox({
             {loading ? "⏳" : "Enviar"}
           </button>
           <button onClick={clearChat} className="styled clear-btn">
-            🧹
+            🗑️
           </button>
         </div>
       </div>

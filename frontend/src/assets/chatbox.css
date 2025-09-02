@@ -37,13 +37,20 @@
 
 .chat-input-container button {
   width: 100%;
-  text-align: center;
+  height: 40%;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  text-align: center;
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
   color: white;
   cursor: pointer;
+}
+
+.chat-input-container button.clear-btn {
+  font-size: xx-large;
 }
 
 .chat-messages {
