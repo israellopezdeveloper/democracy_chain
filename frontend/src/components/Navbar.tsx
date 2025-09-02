@@ -1,10 +1,69 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import {
+  Citizen,
+  useDemocracyContract,
+} from "../hooks/useDemocracyContract";
+import { usePublicClient } from "wagmi";
+import type { Abi, Address } from "viem";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const contract = useDemocracyContract();
+  const publicClient = usePublicClient()!;
+  const [viewerName, setViewerName] = useState<string | null>(null);
 
+  // ⚡ cargar el nombre del viewer si hay wallet en la URL
+  useEffect(() => {
+    const wallet = searchParams.get("wallet");
+    if (!wallet) return;
+
+    const fetchCitizen = async () => {
+      if (!contract) return;
+      try {
+        const address = contract.address as Address;
+        const abi = contract.abi as Abi;
+
+        const citizenUnknown = await publicClient.readContract({
+          address,
+          abi,
+          functionName: "citizens",
+          args: [wallet],
+        });
+
+        // @ts-expect-error "Dynamic ABI import"
+        const citizen: Citizen = new Citizen(citizenUnknown);
+        setViewerName(citizen.person.name);
+      } catch (err) {
+        console.error("Error al obtener ciudadano:", err);
+      }
+    };
+
+    fetchCitizen();
+  }, [searchParams, contract, publicClient]);
+
+  // construir parts
+  const parts: {
+    text: string;
+    link: string;
+  }[] = location.pathname
+    .split("/")
+    .filter(Boolean)
+    .map((item) => {
+      if (item === "candidates")
+        return { text: "Candidatos", link: item };
+      if (item === "citizen")
+        return { text: "Ciudadano", link: item };
+      if (item === "about") return { text: "Sobre mi", link: item };
+      if (item === "editor")
+        return { text: "Editor de programa", link: item };
+      if (item === "viewer")
+        return { text: viewerName ?? "Cargando...", link: item };
+      return { text: item, link: item };
+    });
   interface NavbarItemI {
     title: string;
     href: string;
@@ -27,7 +86,29 @@ export default function Navbar() {
       <nav className="navbar">
         <ConnectButton />
 
-        <Link to="/">Democracy Chain</Link>
+        {/* Breadcrumb */}
+        <div className="breadcrumbs">
+          <Link to="/">Democracy Chain</Link>
+          {parts.map((part, i) => {
+            const path =
+              "/" +
+              parts
+                .slice(0, i + 1)
+                .map((i) => i.link)
+                .join("/");
+            const isLast = i === parts.length - 1;
+            return (
+              <span key={path} className="crumb">
+                {" › "}
+                {isLast ? (
+                  <span>{part.text}</span>
+                ) : (
+                  <Link to={path}>{part.text}</Link>
+                )}
+              </span>
+            );
+          })}
+        </div>
 
         <button
           onClick={() => setOpen(!open)}

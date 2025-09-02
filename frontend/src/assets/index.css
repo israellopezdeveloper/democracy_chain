@@ -114,10 +114,22 @@ button:focus-visible {
 .navbar a {
   transition: all 0.3s ease-in-out;
   vertical-align: middle;
+  font-size: 1.2rem;
+  color: #646cff;
+}
+
+.navbar a:visited {
+  color: #646cff;
+}
+
+.navbar .crumb {
+  font-size: 1.2rem;
+  color: #222;
+  vertical-align: middle;
+  user-select: none;
 }
 
 .navbar a:hover {
-  font-size: 1.2rem;
   text-shadow: rgba(0, 174, 255, 0.9) 0px 0px 17px;
 }
 
@@ -179,7 +191,7 @@ button:focus-visible {
 }
 
 main {
-  padding-top: 10px;
+  padding-top: 3px;
   text-align: center;
 }
 
@@ -232,7 +244,7 @@ main > div.GrapesJsApp {
 .table thead th {
   padding: 12px 16px;
   font-size: 1.1rem;
-  text-align: left;
+  text-align: center;
 }
 
 .table tbody tr {
@@ -247,6 +259,13 @@ main > div.GrapesJsApp {
 .table tbody td {
   padding: 12px 16px;
   font-size: 1rem;
+}
+
+.th-mobile {
+  display: none;
+}
+.th-desktop {
+  display: auto;
 }
 
 .table-container::-webkit-scrollbar {
@@ -426,22 +445,77 @@ div.viewer {
 .page-layout {
   display: flex;
   gap: 20px;
-  padding: 20px;
   flex-direction: row;
-  margin-bottom: 40px;
+  margin-bottom: 60px;
 }
 
 .chat-container {
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .page-layout {
     flex-direction: column;
+    width: 90vw;
   }
 
   .chat-container {
     margin-top: 20px;
     margin-bottom: 30px;
+  }
+
+  .chat-box {
+    width: auto !important;
+    z-index: -1;
+  }
+
+  .table th:nth-child(1),
+  .table td:nth-child(1) {
+    display: none;
+  }
+
+  /* Cambia el encabezado “Nombre” -> “Candidato” */
+  .th-desktop {
+    display: none;
+  }
+  .th-mobile {
+    display: inline;
+  }
+
+  /* En la celda de nombre, muestra el DNI antes del nombre */
+  .table td.name::before {
+    font-weight: 600;
+    color: #445;
+    margin-right: 2px;
+    white-space: nowrap; /* evita cortes raros del DNI */
+  }
+
+  .table tbody td,
+  .table tbody tr,
+  .table tbody,
+  .table thead,
+  .table thead th {
+    font-size: 1rem;
+    padding: 0px;
+  }
+
+  .navbar a {
+    font-size: 1.05rem;
+  }
+
+  .navbar .crumb {
+    font-size: 1.05rem;
+  }
+
+  main {
+    padding-bottom: 70px;
+    z-index: -1;
+  }
+
+  .page-layout {
+    margin-bottom: 10px;
+    position: relative;
+    top: -75px;
+    padding-bottom: 0px;
   }
 }

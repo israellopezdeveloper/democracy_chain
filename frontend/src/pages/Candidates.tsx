@@ -189,7 +189,8 @@ export default function CandidatesPage() {
         return;
       }
 
-      // Escritura: si tu hook NO expone write, migra a useWriteContract(); si sí lo expone, puedes dejarlo:
+      // Escritura: si tu hook NO expone write, migra a useWriteContract(); si
+      // sí lo expone, puedes dejarlo:
       // @ts-expect-error "Dynamic ABI import"
       await contract.write.vote({ args: [wallet] });
 
@@ -225,18 +226,23 @@ export default function CandidatesPage() {
                 <thead>
                   <tr>
                     <th>DNI</th>
-                    <th>Nombre</th>
-                    <th>Votos</th>
+                    <th>
+                      <span className="th-desktop">Nombre</span>
+                      <span className="th-mobile">Candidato</span>
+                    </th>
+                    <th className="th-desktop">Votos</th>
                     <th>Votar</th>
-                    <th>Programa</th>
+                    <th>📄</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCandidates.map((c) => (
                     <tr key={c.wallet}>
                       <td>{c.dni}</td>
-                      <td>{c.name}</td>
-                      <td>{c.votes}</td>
+                      <td className="name" data-dni={c.dni}>
+                        {c.name}
+                      </td>
+                      <td className="th-desktop">{c.votes}</td>
                       <td>
                         <button
                           onClick={() => handleVote(c.wallet)}
@@ -253,7 +259,7 @@ export default function CandidatesPage() {
                       </td>
                       <td>
                         <Link
-                          to={`/viewer?wallet=${encodeURIComponent(c.wallet)}`}
+                          to={`/candidates/viewer?wallet=${encodeURIComponent(c.wallet)}`}
                         >
                           📄
                         </Link>

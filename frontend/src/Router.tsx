@@ -17,8 +17,8 @@ export default function Router() {
           <Route element={<ConnectedRoute />}>
             <Route path="/candidates" element={<CandidatesPage />} />
             <Route path="/citizen" element={<CitizenPage />} />
-            <Route path="/editor" element={<Editor />} />
-            <Route path="/viewer" element={<Viewer />} />
+            <Route path="/citizen/editor" element={<Editor />} />
+            <Route path="/candidates/viewer" element={<Viewer />} />
           </Route>
           <Route path="/about" element={<AboutPage />} />
         </Route>

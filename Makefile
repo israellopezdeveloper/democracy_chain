@@ -89,7 +89,7 @@ run:
 	  $(CLS); \
 	  $(BANNER) "🍻 Run application" "rainbow"; \
 	  services="$$( $(COMPOSE) config --services )"; \
-	  selection="$$(printf "0 - exit\n1 - all\n2 - rebuild\n3 - rerun\n4 - clean\n5 - check\n$$services" | fzf --prompt="🔍 Selecciona un servicio para ver logs: ")"; \
+	  selection="$$(printf "0 - exit\n1 - all\n2 - rebuild\n3 - rerun\n4 - clean\n5 - check\n6 - Populate programs\n$$services" | fzf --prompt="🔍 Selecciona un servicio para ver logs: ")"; \
 	  if [ "$$selection" = "0 - exit" ]; then \
 	    $(SUBBANNER) "🛑 Finalizando servicios..."; \
 	    $(COMPOSE) down --remove-orphans > /dev/null 2>&1 && \
@@ -129,6 +129,15 @@ run:
 	    printf "\033[0;32m   - Running pods\033[0m\n" || \
 	    printf "\033[0;31m   - Running pods\033[0m\n"; \
 	    $(MAKE) wait_healthy; \
+	  elif [ "$$selection" = "6 - Populate programs" ]; then \
+	    $(SUBBANNER) "🟢 Populate programs."; \
+	    $(COMPOSE) up -d > /dev/null 2>&1 && \
+	    printf "\033[0;32m   - Running pods\033[0m\n" || \
+	    printf "\033[0;31m   - Running pods\033[0m\n"; \
+	    $(MAKE) wait_healthy; \
+	    $(MAKE) programs && \
+	    printf "\033[0;32m   - Populated programs\033[0m\n" || \
+	    printf "\033[0;31m   - Populated programs\033[0m\n"; \
 	  elif echo "$$services" | grep -q -w "$$selection"; then \
 	    $(SUBBANNER) "🟢 $$selection logs."; \
 	    $(COMPOSE) logs -f "$$selection"; \

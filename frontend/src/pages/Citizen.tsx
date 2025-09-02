@@ -35,8 +35,8 @@ export default function CitizenPage() {
     if (!newDni || !newName || !contract || !publicClient) return;
     setIsDisabledAll(true);
     try {
-      // @ts-expect-error "Dynamic ABI import"
       const citizen: Citizen = new Citizen(
+        // @ts-expect-error "Dynamic ABI import"
         await contract.read.getCitizen([]),
       );
       if (!citizen.registered) {
@@ -248,13 +248,13 @@ export default function CitizenPage() {
                   Guardar
                 </button>
               ) : hasProgram ? (
-                <a href="/editor">
+                <a href="/citizen/editor">
                   <button disabled={isDisabledAll} className="styled">
                     Editar Programa
                   </button>
                 </a>
               ) : (
-                <a href="/editor">
+                <a href="/citizen/editor">
                   <button disabled={isDisabledAll} className="styled">
                     Crear Programa
                   </button>
