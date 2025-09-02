@@ -1,9 +1,9 @@
-SHELL      = /bin/bash
-BANNER     = . ~/.local/lib/bash/utils.sh && banner
-SUBBANNER  = . ~/.local/lib/bash/utils.sh && subbanner
-CLS        = printf '\033c'
-COMPOSE    = podman-compose
-PROJECT   ?= $(shell basename $(CURDIR))     # nombre de proyecto que usará el label de compose
+SHELL         = /bin/bash
+BANNER        = . ~/.local/lib/bash/utils.sh && banner
+SUBBANNER     = . ~/.local/lib/bash/utils.sh && subbanner
+CLS           = printf '\033c'
+COMPOSE       = podman-compose
+PROJECT      ?= $(shell basename $(CURDIR))     # nombre de proyecto que usará el label de compose
 WAIT_TIMEOUT ?= 180
 
 # Espera a que todos los contenedores del proyecto estén healthy (si tienen healthcheck) o al menos "running".
@@ -32,7 +32,7 @@ define wait_healthy
 	done
 endef
 
-.PHONY: clean run build programs hh-console backend-console create-zip up down logs wait-healthy check
+.PHONY: clean run build programs hh-console backend-console create-zip up down logs wait-healthy check check-ci
 
 wait-healthy:
 	@$(call wait_healthy) > /dev/null 2>&1 && \
@@ -206,6 +206,7 @@ check:
 	    printf "\033[0;31m   ✗ $$d\033[0m\n"; exit 1; \
 	  fi; \
 	fi
+
 check-ci:
 	@set -e; \
 	dirs="$$( \
