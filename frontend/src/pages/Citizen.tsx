@@ -47,7 +47,10 @@ export default function CitizenPage() {
         if (!citizen.registered) {
           if (newCandidate) {
             // @ts-expect-error "Dynamic ABI import"
-            await contract.write.addCitizenCandidate([newDni, newName]);
+            await contract.write.addCitizenCandidate([
+              newDni,
+              newName,
+            ]);
           } else {
             // @ts-expect-error "Dynamic ABI import"
             await contract.write.registerCitizen([newDni, newName]);
@@ -65,11 +68,15 @@ export default function CitizenPage() {
         retries--;
 
         if (retries >= 0) {
-          toast.info(`Reintentando en 1 segundo... (${retries} intentos restantes)`);
+          toast.info(
+            `Reintentando en 1 segundo... (${retries} intentos restantes)`,
+          );
           // Esperar 1 segundo antes de reintentar
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         } else {
-          toast.error("No se pudo completar la operación después de varios intentos");
+          toast.error(
+            "No se pudo completar la operación después de varios intentos",
+          );
           console.error("Error en handleAddCitizen:", e);
         }
       }
