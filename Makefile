@@ -3,12 +3,13 @@ BANNER        = . ~/.local/lib/bash/utils.sh && banner
 SUBBANNER     = . ~/.local/lib/bash/utils.sh && subbanner
 CLS           = printf '\033c'
 COMPOSE       = podman-compose
-PROJECT      ?= $(shell basename $(CURDIR))     # nombre de proyecto que usará el label de compose
+PROJECT      ?= $(shell basename $(CURDIR))
 WAIT_TIMEOUT ?= 180
 
-# Espera a que todos los contenedores del proyecto estén healthy (si tienen healthcheck) o al menos "running".
+# Espera a que todos los contenedores del proyecto estén healthy (si tienen
+# healthcheck) o al menos "running".
 define wait_healthy
-	echo "⏳ Esperando hasta $(WAIT_TIMEOUT)s a que los servicios estén listos..."
+	echo "⏳ Esperando $(WAIT_TIMEOUT)s a que los servicios estén listos..."
 	end=$$(( $$(date +%s) + $(WAIT_TIMEOUT) )); \
 	while true; do \
 	  cids=$$(podman ps -q --filter label=io.podman.compose.project=$(PROJECT)); \
