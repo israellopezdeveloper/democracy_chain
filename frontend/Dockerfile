@@ -12,9 +12,6 @@ COPY public ./public
 # Instalar solo dependencias de producción
 RUN npm install && npm prune --production
 
-# Instalar los modelos transformers.js (desde Xenova)
-RUN npm install --no-save @xenova/transformers
-
 # Copiar el resto del código fuente
 COPY . .
 

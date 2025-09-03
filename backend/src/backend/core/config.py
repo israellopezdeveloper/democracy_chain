@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     QDRANT_URL: str = "http://qdrant:6333/"
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
     LLM_URL: str = "http://llm:11434/api/chat"
-    LLM_MODEL: str = "llama2"
+    LLM_MODEL: str = "llama3"
     # 🔧 Configuración constante del modelo
     LLM_SETTINGS: dict[str, Any] = {
         "model": LLM_MODEL,

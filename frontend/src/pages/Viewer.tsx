@@ -16,54 +16,94 @@ export default function ViewerPage() {
   const BACKEND_URL = import.meta.env["VITE_BACKEND_URL"];
 
   const [content, setContent] = useState<string | null>(null);
+  const [processedHtml, setProcessedHtml] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const contract = useDemocracyContract();
-  const publicClient = usePublicClient()!;
 
+  const contract = useDemocracyContract();
+  const publicClient = usePublicClient();
+
+  // Carga datos del ciudadano y el HTML del programa
   useEffect(() => {
     if (!wallet) return;
 
-    const fetchProgram = async () => {
-      if (contract && publicClient) {
-        const address = contract.address as Address;
-        const abi = contract.abi as Abi;
-        const citizenUnknown = await publicClient.readContract({
-          address,
-          abi,
-          functionName: "citizens",
-          args: [wallet],
-        });
-        // @ts-expect-error "Dynamic ABI import"
-        const citizen: Citizen = new Citizen(citizenUnknown);
-        setName(citizen.person.name);
-        setDni(citizen.person.dni);
-      }
+    (async () => {
       try {
+        if (contract && publicClient) {
+          const address = contract.address as Address;
+          const abi = contract.abi as Abi;
+          const citizenUnknown = await publicClient.readContract({
+            address,
+            abi,
+            functionName: "citizens",
+            args: [wallet],
+          });
+          // @ts-expect-error "Dynamic ABI import"
+          const citizen: Citizen = new Citizen(citizenUnknown);
+          setName(citizen.person.name);
+          setDni(citizen.person.dni);
+        }
+
         const res = await fetch(`${BACKEND_URL}/${wallet}/program`);
         if (!res.ok) throw new Error("Programa no encontrado");
         const text = await res.text();
         setContent(text);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Error desconocido al cargar el programa");
-        }
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Error desconocido al cargar el programa",
+        );
       }
-    };
-
-    void fetchProgram();
+    })();
   }, [wallet, BACKEND_URL, contract, publicClient]);
 
-  if (!wallet || error || !content) {
+  // Procesa el HTML reemplazando wallets -> <b>Nombre</b>
+  useEffect(() => {
+    (async () => {
+      if (!content) {
+        setProcessedHtml("");
+        return;
+      }
+      setProcessedHtml(content);
+    })();
+  }, [content, contract, publicClient]);
+
+  // Manejo de estados
+  if (!wallet) {
     return (
       <Modal
         title="📃 Error"
-        message="No existe el programa"
+        message="Falta el parámetro ?wallet"
         onClose={() => {}}
         autoCloseDelay={4000}
         redirectTo="/candidates"
       />
+    );
+  }
+
+  if (error) {
+    return (
+      <Modal
+        title="📃 Error"
+        message={error}
+        onClose={() => {}}
+        autoCloseDelay={4000}
+        redirectTo="/candidates"
+      />
+    );
+  }
+
+  if (!content || !processedHtml) {
+    return (
+      <main>
+        <div style={{ maxWidth: "none" }}>
+          <img src="/freedom.svg" alt="Freedom" />
+          <div>
+            <h1>Democracy Chain</h1>
+            <h2>Cargando programa…</h2>
+          </div>
+        </div>
+      </main>
     );
   }
 
@@ -76,9 +116,11 @@ export default function ViewerPage() {
           <h2>
             📘 Programa Electoral de {name} ({dni})
           </h2>
+
           <div
             className="viewer"
-            dangerouslySetInnerHTML={{ __html: content }}
+            // ✅ ahora __html es un string resuelto, no una Promise
+            dangerouslySetInnerHTML={{ __html: processedHtml }}
           />
         </div>
       </div>

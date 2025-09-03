@@ -25,6 +25,8 @@
     "@tiptap/react": "^3.0.7",
     "@tiptap/starter-kit": "^3.0.7",
     "@xenova/transformers": "^2.17.2",
+    "dompurify": "^3.2.6",
+    "marked": "^16.2.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",

@@ -7,7 +7,7 @@ import httpx
 from backend.core.config import settings
 
 LLM_URL = os.getenv("LLM_URL", "http://llm:11434/api/chat")
-LLM_MODEL = os.getenv("LLM_MODEL", "llama2")
+LLM_MODEL = os.getenv("LLM_MODEL", "llama3")
 
 # Limita el número de fragmentos por programa para no saturar el LLM
 MAX_CHUNKS_PER_WALLET = 3
@@ -26,9 +26,7 @@ def format_prompt(
         for text in texts[:MAX_CHUNKS_PER_WALLET]:
             prompt += f"- {text.strip()}\n"
 
-    prompt += (
-        "\nResponde de forma clara qué programas se ajustan mejor al criterio " "del ciudadano. "
-    )
+    prompt += "\nResponde de forma clara qué programas se ajustan mejor al criterio del ciudadano. "
     return prompt
 
 

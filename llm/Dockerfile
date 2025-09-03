@@ -4,7 +4,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-ARG LLM_MODEL=llama2
+ARG LLM_MODEL=llama3
 ENV LLM_MODEL=${LLM_MODEL}
 ENV OLLAMA_MODELS=/root/.ollama
 

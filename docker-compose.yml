@@ -60,9 +60,8 @@ services:
         condition: service_healthy
     networks:
       - democracy
-    volumes: # Eliminar cuando haya terminado de desarrollar
-      - ./frontend:/app
-      - /app/node_modules
+    volumes:
+      - ./frontend/src:/app/src
 
   qdrant:
     image: docker.io/qdrant/qdrant:latest
@@ -112,7 +111,7 @@ services:
     container_name: democracy-backend
     user: "${UID}:${GID}"
     volumes:
-      - ./backend:/app # Eliminar cuando haya terminado de desarrollar
+      - ./backend/src:/app/src # Eliminar cuando haya terminado de desarrollar
       - ./data:/data
     environment:
       - MYSQL_HOST=${MYSQL_HOST:-mysql}
@@ -124,10 +123,10 @@ services:
       - FRONTEND_HOST=${FRONTEND_HOST:-http://localhost}
       - QDRANT_URL=${QDRANT_HOST:-http://qdrant:6333/}
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
-      - LLM_MODEL=${LLM_MODEL:-llama2}
+      - LLM_MODEL=${LLM_MODEL:-llama3}
       - LLM_URL=${LLM_URL:-http://llm:11434/api/chat}
       - LLM_PROVIDER=ollama
-      - LLM_MODEL=${LLM_MODEL:-llama2}
+      - LLM_MODEL=${LLM_MODEL:-llama3}
     ports:
       - "8000:8000"
     depends_on:
@@ -180,29 +179,31 @@ services:
   llm:
     build:
       context: ./llm
+      args:
+        LLM_MODEL: ${LLM_MODEL:-llama3}
     container_name: democracy-llm
     restart: unless-stopped
     entrypoint: >
       sh -c '
-        if [ "$${ENVIRONMENT}" = "development" ]; then
-          ollama serve & 
-          echo "Esperando a que Ollama esté disponible..." && 
-          until curl -s http://localhost:11434 > /dev/null; do sleep 2; done && 
-          echo "Descargando modelo $${LLM_MODEL:-llama2}..." && 
-          ollama pull $${LLM_MODEL:-llama2} && 
-          tail -f /dev/null;
-        else
-          echo "Entorno de producción - solo lanzando Ollama...";
-          exec ollama serve;
-        fi
+        ollama serve & 
+        echo "Esperando a Ollama..." &&
+        until curl -sf http://localhost:11434/api/tags >/dev/null; do sleep 2; done &&
+        echo "Warm-up..." &&
+        curl -s -X POST http://localhost:11434/api/chat \
+          -H "Content-Type: application/json" \
+          -d "{\"model\":\"${LLM_MODEL:-llama3}\",\"messages\":[{\"role\":\"user\",\"content\":\".\"}],\"stream\":false}" >/dev/null &&
+        tail -f /dev/null
       '
     ports: # TODO: eliminar
       - "11434:11434"
-    volumes:
-      - ollama_models:/root/.ollama
     environment:
       - OLLAMA_MODELS=/root/.ollama
-      - LLM_MODEL=${LLM_MODEL:-llama2}
+      - LLM_MODEL=${LLM_MODEL:-llama3}
+      - OLLAMA_MAX_LOADED_MODELS=1
+      - OLLAMA_KEEP_ALIVE=30m
+      - OLLAMA_NUM_PARALLEL=2
+    shm_size: "2gb"
+    init: true
     user: "${UID}:${GID}"
     networks:
       - ragnet
@@ -224,7 +225,6 @@ services:
 volumes:
   qdrant_data:
   mysql_data:
-  ollama_models:
 
 networks:
   democracy:
