@@ -45,7 +45,7 @@ up:
 	  $(call wait_healthy) >/dev/null 2>&1 && \
 	  printf "\033[0;32m   - Run & wait for running\033[0m\n" || \
 	  printf "\033[0;31m   - Run & wait for running\033[0m\n"
-	$(call wait_healthy) >/dev/null 2>&1 && \
+	@$(call wait_healthy) >/dev/null 2>&1 && \
 	  printf "\033[0;32m   - Run & wait for running\033[0m\n" || \
 	  printf "\033[0;31m   - Run & wait for running\033[0m\n"
 

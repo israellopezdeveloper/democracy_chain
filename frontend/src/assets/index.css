@@ -440,6 +440,7 @@ div.viewer {
   margin-top: 1rem;
   background-color: #ffffffaa;
   color: #000000ff;
+  text-align: justify;
 }
 
 .page-layout {
@@ -493,8 +494,7 @@ div.viewer {
   .table tbody td,
   .table tbody tr,
   .table tbody,
-  .table thead,
-  .table thead th {
+  .table thead {
     font-size: 1rem;
     padding: 0px;
   }

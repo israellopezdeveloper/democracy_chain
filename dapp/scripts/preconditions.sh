@@ -29,7 +29,7 @@ normalize_ms() {
       val=$(( val * 1000 ))
     fi
     # futuro razonable
-    if (( val > NOW_MS )); then
+    if (( val > default_ms )); then
       echo "$val"
       return 0
     fi

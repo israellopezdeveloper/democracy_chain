@@ -1,6 +1,6 @@
 1 -  NVIM          - cls; nvim
 2 - 🚀 Hardhat node - cls; sleep 3m; loop "🚀 Hardhat node" "make hh-console" 
-3 - 🚢 Deploy & Run - cls; make clean programs run
+3 - 🚢 Deploy & Run - cls; make clean up programs run
 4 -  Programs      - cls; 
 5 - 🧪 Tests        - cls; cd dapp; npm i; loop '🧪 Tests' 'npx hardhat clean; npx hardhat compile; npx hardhat test'; cd ..
 6 - 📔 README       - cls; conda activate personal; grip README.md

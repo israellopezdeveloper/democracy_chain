@@ -34,30 +34,48 @@ export default function CitizenPage() {
   const handleAddCitizen = async () => {
     if (!newDni || !newName || !contract || !publicClient) return;
     setIsDisabledAll(true);
-    try {
-      const citizen: Citizen = new Citizen(
-        // @ts-expect-error "Dynamic ABI import"
-        await contract.read.getCitizen([]),
-      );
-      if (!citizen.registered) {
-        if (newCandidate) {
+    let retries: number = 3;
+    let done: boolean = false;
+
+    while (retries >= 0 && !done) {
+      try {
+        const citizen: Citizen = new Citizen(
           // @ts-expect-error "Dynamic ABI import"
-          await contract.write.addCitizenCandidate([newDni, newName]);
+          await contract.read.getCitizen([]),
+        );
+
+        if (!citizen.registered) {
+          if (newCandidate) {
+            // @ts-expect-error "Dynamic ABI import"
+            await contract.write.addCitizenCandidate([newDni, newName]);
+          } else {
+            // @ts-expect-error "Dynamic ABI import"
+            await contract.write.registerCitizen([newDni, newName]);
+          }
         } else {
-          // @ts-expect-error "Dynamic ABI import"
-          await contract.write.registerCitizen([newDni, newName]);
+          if (newCandidate) {
+            // @ts-expect-error "Dynamic ABI import"
+            await contract.write.addCandidate([]);
+          }
         }
-      } else {
-        if (newCandidate) {
-          // @ts-expect-error "Dynamic ABI import"
-          await contract.write.addCandidate([]);
+
+        done = true;
+        toast.success("Operación completada con éxito");
+      } catch (e) {
+        retries--;
+
+        if (retries >= 0) {
+          toast.info(`Reintentando en 1 segundo... (${retries} intentos restantes)`);
+          // Esperar 1 segundo antes de reintentar
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          toast.error("No se pudo completar la operación después de varios intentos");
+          console.error("Error en handleAddCitizen:", e);
         }
       }
-    } catch (e) {
-      console.log("Error:", e);
-    } finally {
-      setIsDisabledAll(false);
     }
+
+    setIsDisabledAll(false);
   };
 
   const loadCitizen = useCallback(async () => {

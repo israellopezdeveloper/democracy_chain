@@ -44,7 +44,6 @@ def split_programs(input_file: str = "programas.md", output_dir: str = "programs
 
         # Escribir archivo .md temporal
         with open(filename_md, "w", encoding="utf-8") as out_file:
-            out_file.write(f"# {program['title']}\n\n")
             out_file.write(program["text"])  # <- ahora mypy sabe que es str
 
         # Convertir a HTML standalone con pandoc
